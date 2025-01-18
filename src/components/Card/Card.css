@@ -1,0 +1,49 @@
+.card {
+  width: 226px;
+  height: 314px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: 2px solid #000;
+  position: relative;
+}
+
+.corner {
+  position: absolute;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.top-left {
+  top: 10px;
+  left: 10px;
+
+  &.black {
+    color: black;
+  }
+
+  &.red {
+    color: red;
+  }
+}
+
+.bottom-right {
+  bottom: 10px;
+  right: 10px;
+  transform: rotate(180deg);
+
+  &.black {
+    color: black;
+  }
+
+  &.red {
+    color: red;
+  }
+}
+
+.center-suit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
