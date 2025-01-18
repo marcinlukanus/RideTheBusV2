@@ -1,6 +1,6 @@
 import './Card.css';
 
-type CardProps = {
+export type CardProps = {
   suit: 'HEARTS' | 'DIAMONDS' | 'CLUBS' | 'SPADES';
   value: string;
 };
