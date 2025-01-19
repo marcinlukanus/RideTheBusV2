@@ -10,6 +10,7 @@ import {
 } from './useGameState';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '../../helpers/hooks/useWindowSize';
+import { postScore } from '../../api/postScore';
 
 export const Game = () => {
   const { width, height } = useWindowSize();
@@ -27,6 +28,13 @@ export const Game = () => {
     // Draw cards on initial render
     dispatch({ type: 'DRAW_CARDS', amountToDraw: 4 });
   }, []);
+
+  useEffect(() => {
+    // Post score when game is over
+    if (gameState.isGameOver) {
+      postScore(gameState.timesRedrawn);
+    }
+  }, [gameState.isGameOver, gameState.timesRedrawn]);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {
