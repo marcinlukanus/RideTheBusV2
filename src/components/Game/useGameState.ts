@@ -108,7 +108,8 @@ export const useGameState = () => {
     currentRound: 1,
     hasWon: false,
     isGameOver: false,
-    timesRedrawn: 0,
+    // Initial draw of cards increments timesRedrawn by 1, so we start at -1
+    timesRedrawn: -1,
   });
 
   const firstRound = (color: RedOrBlack) => {
