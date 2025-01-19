@@ -58,7 +58,7 @@ const reducer = (
     timesRedrawn: number;
   },
   action:
-    | { type: 'DRAW_CARDS'; amountToDraw: number }
+    | { type: 'DRAW_CARDS'; amountToDraw: number; resetScore: boolean }
     | { type: 'ADVANCE_ROUND'; cardToFlip: number }
     | { type: 'GAME_OVER'; cardToFlip: number }
     | { type: 'WIN_GAME' }
@@ -71,7 +71,7 @@ const reducer = (
         hasWon: false,
         isGameOver: false,
         currentRound: 1,
-        timesRedrawn: state.timesRedrawn + 1,
+        timesRedrawn: action.resetScore ? 0 : state.timesRedrawn + 1,
       };
     case 'ADVANCE_ROUND':
       return {

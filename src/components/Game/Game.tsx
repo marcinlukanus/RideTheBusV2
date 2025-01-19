@@ -26,7 +26,7 @@ export const Game = () => {
 
   useEffect(() => {
     // Draw cards on initial render
-    dispatch({ type: 'DRAW_CARDS', amountToDraw: 4 });
+    dispatch({ type: 'DRAW_CARDS', amountToDraw: 4, resetScore: false });
   }, []);
 
   useEffect(() => {
@@ -42,7 +42,11 @@ export const Game = () => {
         return (
           <>
             {(['red', 'black'] as RedOrBlack[]).map((color) => (
-              <button key={color} onClick={() => firstRound(color)}>
+              <button
+                key={color}
+                className={color}
+                onClick={() => firstRound(color)}
+              >
                 {color.charAt(0).toUpperCase() + color.slice(1).toLowerCase()}
               </button>
             ))}
@@ -53,7 +57,11 @@ export const Game = () => {
           <>
             {(['higher', 'lower', 'same'] as HigherLowerOrSame[]).map(
               (guess) => (
-                <button key={guess} onClick={() => secondRound(guess)}>
+                <button
+                  key={guess}
+                  className={guess}
+                  onClick={() => secondRound(guess)}
+                >
                   {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
                 </button>
               )
@@ -76,7 +84,11 @@ export const Game = () => {
         return (
           <>
             {suits.map((suit) => (
-              <button key={suit} onClick={() => finalRound(suit)}>
+              <button
+                key={suit}
+                className={suit}
+                onClick={() => finalRound(suit)}
+              >
                 {suit.charAt(0).toUpperCase() + suit.slice(1).toLowerCase()}
               </button>
             ))}
@@ -89,13 +101,26 @@ export const Game = () => {
 
   return (
     <>
-      <Confetti width={width} height={height} run={gameState.hasWon} />
+      <Confetti
+        width={width}
+        height={height}
+        recycle={false}
+        run={gameState.hasWon}
+      />
+
       <div className='game-container'>
         <div className='options'>
           <button
-            onClick={() => dispatch({ type: 'DRAW_CARDS', amountToDraw: 4 })}
+            className='draw-cards'
+            onClick={() =>
+              dispatch({
+                type: 'DRAW_CARDS',
+                amountToDraw: 4,
+                resetScore: gameState.hasWon,
+              })
+            }
           >
-            Draw Cards
+            {gameState.hasWon ? 'Another Ride?' : 'Draw Cards'}
           </button>
         </div>
 
