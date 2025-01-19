@@ -8,8 +8,12 @@ import {
   suits,
   useGameState,
 } from './useGameState';
+import Confetti from 'react-confetti';
+import { useWindowSize } from '../../helpers/hooks/useWindowSize';
 
 export const Game = () => {
+  const { width, height } = useWindowSize();
+
   const {
     gameState,
     dispatch,
@@ -76,35 +80,38 @@ export const Game = () => {
   };
 
   return (
-    <div className='game-container'>
-      <div className='options'>
-        <button
-          onClick={() => dispatch({ type: 'DRAW_CARDS', amountToDraw: 4 })}
-        >
-          Draw Cards
-        </button>
+    <>
+      <Confetti width={width} height={height} run={gameState.hasWon} />
+      <div className='game-container'>
+        <div className='options'>
+          <button
+            onClick={() => dispatch({ type: 'DRAW_CARDS', amountToDraw: 4 })}
+          >
+            Draw Cards
+          </button>
+        </div>
+
+        <div className='cards'>
+          {gameState.cards.map((card, index) => (
+            <Card
+              key={index}
+              rank={card.values.rank}
+              showCardBack={card.showCardBack}
+              suit={card.suit}
+            />
+          ))}
+        </div>
+
+        {!gameState.isGameOver && (
+          <div className='game-buttons'>{renderButtons()}</div>
+        )}
+
+        {gameState.isGameOver && (
+          <p>{gameState.hasWon ? 'You won!' : 'You lost!'}</p>
+        )}
+
+        <p>Times redrawn: {gameState.timesRedrawn}</p>
       </div>
-
-      <div className='cards'>
-        {gameState.cards.map((card, index) => (
-          <Card
-            key={index}
-            rank={card.values.rank}
-            showCardBack={card.showCardBack}
-            suit={card.suit}
-          />
-        ))}
-      </div>
-
-      {!gameState.isGameOver && (
-        <div className='game-buttons'>{renderButtons()}</div>
-      )}
-
-      {gameState.isGameOver && (
-        <p>{gameState.hasWon ? 'You won!' : 'You lost!'}</p>
-      )}
-
-      <p>Times redrawn: {gameState.timesRedrawn}</p>
-    </div>
+    </>
   );
 };
