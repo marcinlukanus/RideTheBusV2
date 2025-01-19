@@ -1,26 +1,43 @@
-.card {
+.card-container {
+  position: relative;
   width: 226px;
   height: 314px;
-  background: white;
+  perspective: 1500px; /* Increase perspective for more depth */
+}
+
+.card {
+  width: 100%;
+  height: 100%;
   border-radius: 10px;
-  box-shadow: 0 4px 8px #1b2631;
+  position: absolute;
+  backface-visibility: hidden; /* Hide the back face when not visible */
+  transition: transform 0.6s; /* Add transition for transform */
+  transform-style: preserve-3d; /* Ensure 3D transformations are preserved */
+}
+
+.card-front,
+.card-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+  border-radius: 10px;
+}
+
+.card-front {
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.19); /* Enhanced shadow */
   border: 2px solid #000;
-  position: relative;
-  perspective: 1000px; /* Adds 3D perspective */
+  transform: rotateY(0deg); /* Ensure front face is visible initially */
 }
 
 .card-back {
-  width: 226px;
-  height: 314px;
-  border: 2px solid #000;
-  border-radius: 10px;
   background-color: #ffffff; /* Base color */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-  overflow: hidden;
-  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.19); /* Enhanced shadow */
+  transform: rotateY(180deg); /* Rotate the back face */
+  overflow: hidden; /* Clip the overflowing content */
 }
 
-/* Diagonal stripes */
 .card-back::before {
   content: '';
   position: absolute;
@@ -56,36 +73,35 @@
   pointer-events: none;
 }
 
+.flipped .card {
+  transform: rotateY(180deg);
+}
+
+.hidden {
+  opacity: 0; /* Use opacity instead of visibility */
+}
+
 .corner {
   position: absolute;
-  font-size: 2rem;
+  font-size: 3rem;
   font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Add text shadow for depth */
+
+  /* Use font-size 2rem for smaller screens */
+  @media (max-width: 600px) {
+    font-size: 2rem;
+  }
 }
 
 .top-left {
   top: 10px;
-  left: 10px;
+  left: 15px;
 }
 
 .bottom-right {
   bottom: 10px;
-  right: 10px;
-  transform: rotate(180deg);
-
-  &.black {
-    color: black;
-  }
-
-  &.red {
-    color: red;
-  }
-}
-
-.center-suit {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+  right: 15px;
+  transform: rotate(180deg); /* Rotate the text */
 }
 
 .black {
@@ -96,24 +112,19 @@
   color: red;
 }
 
-@media (max-width: 720px) {
-  .card,
-  .cardback {
-    width: 72px;
-    height: 100px;
-  }
-  .corner {
-    font-size: 1rem;
-  }
+.center-suit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 5rem; /* Increase size for better visibility */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add text shadow for depth */
 }
 
-@media (max-width: 1050px) {
-  .card,
-  .card-back {
-    width: 150px;
-    height: 208px;
-  }
-  .corner {
-    font-size: 1.25rem;
+/* Responsive design */
+@media (max-width: 600px) {
+  .card-container {
+    width: 144px;
+    height: 200px;
   }
 }

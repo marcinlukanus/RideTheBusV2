@@ -41,21 +41,21 @@ const suitSymbol = (suit: string) => {
 };
 
 export const Card = ({ rank, showCardBack, suit }: CardProps) => {
-  if (showCardBack) {
-    return <div className='card-back' />;
-  }
-
   const cornerText = `${rank}${suitSymbol(suit)}`;
 
   const color = suit === 'HEARTS' || suit === 'DIAMONDS' ? 'red' : 'black';
 
   return (
-    <div className='card'>
-      <div className={`corner top-left ${color}`}>{cornerText}</div>
+    <div className={`card-container ${showCardBack ? 'flipped' : ''}`}>
+      <div className='card'>
+        <div className={`card-front ${showCardBack ? 'hidden' : ''}`}>
+          <div className={`corner top-left ${color}`}>{cornerText}</div>
+          <div className='center-suit'>{renderCenterSuit(suit)}</div>
+          <div className={`corner bottom-right ${color}`}>{cornerText}</div>
+        </div>
 
-      <div className='center-suit'>{renderCenterSuit(suit)}</div>
-
-      <div className={`corner bottom-right ${color}`}>{cornerText}</div>
+        <div className='card-back' />
+      </div>
     </div>
   );
 };

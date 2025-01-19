@@ -140,10 +140,12 @@ export const Game = () => {
         )}
 
         {gameState.isGameOver && (
-          <p>{gameState.hasWon ? 'You won!' : 'You lost!'}</p>
+          <p className='end-state'>
+            {gameState.hasWon ? 'You won!' : 'Take a drink!'}
+          </p>
         )}
 
-        <p>Times redrawn: {gameState.timesRedrawn}</p>
+        <p className='times-redrawn'>Times redrawn: {gameState.timesRedrawn}</p>
       </div>
     </>
   );
