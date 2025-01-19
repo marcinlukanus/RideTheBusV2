@@ -30,11 +30,11 @@ export const Game = () => {
   }, []);
 
   useEffect(() => {
-    // Post score when game is over
-    if (gameState.isGameOver) {
+    // Post score when game is won
+    if (gameState.isGameOver && gameState.hasWon) {
       postScore(gameState.timesRedrawn);
     }
-  }, [gameState.isGameOver, gameState.timesRedrawn]);
+  }, [gameState.isGameOver, gameState.hasWon, gameState.timesRedrawn]);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {
