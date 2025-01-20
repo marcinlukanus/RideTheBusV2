@@ -16,12 +16,16 @@ export const WorstScores = () => {
 
   const worstScore = worstScores.length > 0 ? worstScores[0].score : 0;
 
+  const hasScores = worstScores.length > 0;
+
   return (
     <div className='worst-scores'>
       <div>
         <p className='score-type'>Longest Rides</p>
         <p className='score-time'>Past 24 hours</p>
       </div>
+
+      {!hasScores && <p>No rides taken...</p>}
 
       <ul>
         {worstScores.map((score, index) => (
