@@ -11,6 +11,8 @@ import {
 import Confetti from 'react-confetti';
 import { useWindowSize } from '../../helpers/hooks/useWindowSize';
 import { postScore } from '../../api/postScore';
+// import { BestScores } from '../BestScores/BestScores';
+import { WorstScores } from '../WorstScores/WorstScores';
 
 export const Game = () => {
   const { width, height } = useWindowSize();
@@ -143,6 +145,11 @@ export const Game = () => {
         )}
 
         <p className='times-redrawn'>Times redrawn: {gameState.timesRedrawn}</p>
+
+        <div className='leaderboards'>
+          {/* <BestScores /> */}
+          <WorstScores />
+        </div>
       </div>
     </>
   );
