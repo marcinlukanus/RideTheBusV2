@@ -101,29 +101,9 @@ export const Game = () => {
 
   return (
     <>
-      <Confetti
-        width={width}
-        height={height}
-        recycle={false}
-        run={gameState.hasWon}
-      />
+      {gameState.hasWon && <Confetti width={width} height={height} />}
 
       <div className='game-container'>
-        <div className='options'>
-          <button
-            className='draw-cards'
-            onClick={() =>
-              dispatch({
-                type: 'DRAW_CARDS',
-                amountToDraw: 4,
-                resetScore: gameState.hasWon,
-              })
-            }
-          >
-            {gameState.hasWon ? 'Another Ride?' : 'Draw Cards'}
-          </button>
-        </div>
-
         <div className='cards'>
           {gameState.cards.map((card, index) => (
             <Card
@@ -135,15 +115,34 @@ export const Game = () => {
           ))}
         </div>
 
+        {gameState.isGameOver && (
+          <div className='options'>
+            <button
+              className='draw-cards'
+              onClick={() =>
+                dispatch({
+                  type: 'DRAW_CARDS',
+                  amountToDraw: 4,
+                  resetScore: gameState.hasWon,
+                })
+              }
+            >
+              {gameState.hasWon ? 'Another Ride?' : 'Redraw Cards'}
+            </button>
+          </div>
+        )}
+
         {!gameState.isGameOver && (
           <div className='game-buttons'>{renderButtons()}</div>
         )}
 
         {gameState.isGameOver && (
-          <p>{gameState.hasWon ? 'You won!' : 'You lost!'}</p>
+          <p className='end-state'>
+            {gameState.hasWon ? 'You won!' : 'Take a drink!'}
+          </p>
         )}
 
-        <p>Times redrawn: {gameState.timesRedrawn}</p>
+        <p className='times-redrawn'>Times redrawn: {gameState.timesRedrawn}</p>
       </div>
     </>
   );

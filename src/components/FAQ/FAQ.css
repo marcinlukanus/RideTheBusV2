@@ -1,0 +1,76 @@
+/* General Accordion Styling */
+.accordion-root {
+  background-color: #0a1e3e; /* Dark blue background */
+  border: 1px solid #133f7f; /* Slightly lighter blue border */
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* Accordion Item */
+.accordion-item {
+  border-bottom: 1px solid #133f7f;
+}
+
+.accordion-item:last-child {
+  border-bottom: none;
+}
+
+/* Accordion Header */
+.accordion-header {
+  margin: 0;
+}
+
+.accordion-trigger {
+  all: unset;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 95%;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #cfd9f5; /* Light blue text */
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.3s ease;
+  outline: none;
+}
+
+.accordion-trigger:hover {
+  background-color: #133f7f; /* Hover state: lighter dark blue */
+}
+
+.accordion-trigger:focus {
+  box-shadow: 0 0 0 2px #69a7ff; /* Focus ring */
+}
+
+.accordion-chevron[data-state='open'] {
+  transform: rotate(180deg); /* Optional rotation for icons */
+}
+
+/* Accordion Content */
+.accordion-content {
+  overflow: hidden;
+  background-color: #0f274a; /* Slightly lighter dark blue */
+  color: #cfd9f5;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 0 16px; /* Padding for left/right */
+  max-height: 0; /* Collapsed state */
+  transition: max-height 0.5s ease, padding 0.5s ease; /* Smooth transition */
+}
+
+/* Open Content */
+.accordion-content[data-state='open'] {
+  max-height: 300px; /* Adjust max-height for open content */
+  padding: 16px; /* Add padding on open */
+}
+
+/* Close Content */
+.accordion-content[data-state='closed'] {
+  max-height: 0;
+  padding: 0 16px; /* Retain side padding while collapsing */
+}

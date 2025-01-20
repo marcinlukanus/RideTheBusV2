@@ -7,9 +7,9 @@
 
 .options {
   display: flex;
-  margin-bottom: 32px;
+  margin-top: 2rem;
 
-  > .draw-cards {
+  > button.draw-cards {
     padding: 0.5rem 1rem;
     font-size: 1rem;
     font-weight: 700;
@@ -20,6 +20,7 @@
     color: #000;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.1s ease-in-out;
+    user-select: none; /* Prevent text selection */
   }
 
   > .draw-cards:active {
@@ -49,6 +50,7 @@
     background-color: #fff;
     color: #000;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    user-select: none; /* Prevent text selection */
 
     &.red,
     &.HEARTS,
@@ -64,4 +66,16 @@
       color: #fff;
     }
   }
+}
+
+.end-state {
+  margin-top: 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.times-redrawn {
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
