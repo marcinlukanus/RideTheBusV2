@@ -3,6 +3,7 @@
   width: 226px;
   height: 314px;
   perspective: 1500px; /* Increase perspective for more depth */
+  user-select: none; /* Prevent text selection */
 }
 
 .card {

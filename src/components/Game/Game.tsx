@@ -101,12 +101,7 @@ export const Game = () => {
 
   return (
     <>
-      <Confetti
-        width={width}
-        height={height}
-        recycle={false}
-        run={gameState.hasWon}
-      />
+      {gameState.hasWon && <Confetti width={width} height={height} />}
 
       <div className='game-container'>
         <div className='cards'>
