@@ -109,21 +109,6 @@ export const Game = () => {
       />
 
       <div className='game-container'>
-        <div className='options'>
-          <button
-            className='draw-cards'
-            onClick={() =>
-              dispatch({
-                type: 'DRAW_CARDS',
-                amountToDraw: 4,
-                resetScore: gameState.hasWon,
-              })
-            }
-          >
-            {gameState.hasWon ? 'Another Ride?' : 'Draw Cards'}
-          </button>
-        </div>
-
         <div className='cards'>
           {gameState.cards.map((card, index) => (
             <Card
@@ -134,6 +119,23 @@ export const Game = () => {
             />
           ))}
         </div>
+
+        {gameState.isGameOver && (
+          <div className='options'>
+            <button
+              className='draw-cards'
+              onClick={() =>
+                dispatch({
+                  type: 'DRAW_CARDS',
+                  amountToDraw: 4,
+                  resetScore: gameState.hasWon,
+                })
+              }
+            >
+              {gameState.hasWon ? 'Another Ride?' : 'Redraw Cards'}
+            </button>
+          </div>
+        )}
 
         {!gameState.isGameOver && (
           <div className='game-buttons'>{renderButtons()}</div>
