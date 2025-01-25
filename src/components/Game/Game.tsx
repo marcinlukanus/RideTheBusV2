@@ -13,6 +13,7 @@ import { useWindowSize } from '../../helpers/hooks/useWindowSize';
 import { postScore } from '../../api/postScore';
 // import { BestScores } from '../BestScores/BestScores';
 import { WorstScores } from '../WorstScores/WorstScores';
+import { postCardCounts } from '../../api/postCardCounts';
 
 export const Game = () => {
   const { width, height } = useWindowSize();
@@ -37,6 +38,13 @@ export const Game = () => {
       postScore(gameState.timesRedrawn);
     }
   }, [gameState.isGameOver, gameState.hasWon, gameState.timesRedrawn]);
+
+  useEffect(() => {
+    // Post cards after game is over
+    if (gameState.isGameOver) {
+      postCardCounts(gameState.cards);
+    }
+  }, [gameState.isGameOver, gameState.cards]);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {

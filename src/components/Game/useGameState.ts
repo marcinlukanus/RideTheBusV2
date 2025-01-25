@@ -10,7 +10,7 @@ type Value = {
   numericValue: number;
 };
 
-type Card = {
+export type Card = {
   suit: Suit;
   values: Value;
   showCardBack: boolean;
