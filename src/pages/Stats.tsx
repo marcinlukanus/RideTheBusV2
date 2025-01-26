@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getCardCounts } from '../../api/getCardCounts';
+import { getCardCounts } from '../api/getCardCounts';
 
 type CardCount = {
   card_rank: string;

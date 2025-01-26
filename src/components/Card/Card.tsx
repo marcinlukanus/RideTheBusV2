@@ -1,4 +1,3 @@
-import './Card.css';
 import { Clubs } from './Suits/Clubs';
 import { Diamonds } from './Suits/Diamonds';
 import { Hearts } from './Suits/Hearts';
@@ -46,21 +45,42 @@ export const Card = ({ rank, showCardBack, suit }: CardProps) => {
   const color = suit === 'HEARTS' || suit === 'DIAMONDS' ? 'red' : 'black';
 
   return (
-    <div className={`card-container ${showCardBack ? 'flipped' : ''}`}>
-      <div className='card'>
-        <div className={`card-front ${showCardBack ? 'hidden' : ''}`}>
-          <div className={`corner top-left ${color}`}>
+    <div className='relative w-[144px] h-[200px] sm:w-[226px] sm:h-[314px] perspective-[1500px] select-none'>
+      <div
+        className={`h-full w-full rounded-[10px] absolute backface-hidden transition-transform duration-600 transform-3d ${
+          showCardBack ? 'rotate-y-180' : ''
+        }`}
+      >
+        <div
+          className={`h-full w-full absolute backface-hidden rounded-[10px]
+             bg-white rotate-y-0 shadow-lg border-2 border-solid ${
+               showCardBack ? 'opacity-0' : ''
+             }`}
+        >
+          <div
+            className={`absolute text-5xl font-bold text-shadow-md xs:text-4xl top-2.5 left-3.5 text-${color}`}
+          >
             {!showCardBack && cornerText}
           </div>
-          <div className='center-suit'>
+          <div className='flex justify-center items-center h-full'>
             {!showCardBack && renderCenterSuit(suit)}
           </div>
-          <div className={`corner bottom-right ${color}`}>
+          <div
+            className={`absolute text-5xl font-bold text-shadow-md xs:text-4xl bottom-2.5 right-3.5 rotate-180 text-${color}`}
+          >
             {!showCardBack && cornerText}
           </div>
         </div>
 
-        <div className='card-back' />
+        <div
+          className='h-full w-full absolute backface-hidden rounded-[10px] card-back
+         bg-white shadow-lg rotate-y-180 overflow-hidden before:absolute 
+         before:left-0 before:w-[200%] before:h-[200%] before:shadow-lg 
+         before:bg-gradient-to-b before:from-[#ffffff] before:via-[#ffd700] before:to-[#d99200]
+          after:absolute after:top-0 after:left-0 after:w-full after:h-full after:bg-radial 
+          after:from-[rgba(255,255,255,0.05)] after:via-transparent after:to-transparent 
+          after:pointer-events-none'
+        />
       </div>
     </div>
   );
