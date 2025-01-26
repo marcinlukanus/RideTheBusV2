@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDailyWorstScores } from '../../api/getDailyWorstScores';
 
-export const WorstScores = () => {
+export const LongestRides = () => {
   const [worstScores, setWorstScores] = useState<any[]>([]);
 
   useEffect(() => {

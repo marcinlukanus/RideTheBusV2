@@ -11,7 +11,7 @@ import Confetti from 'react-confetti';
 import { useWindowSize } from '../../helpers/hooks/useWindowSize';
 import { postScore } from '../../api/postScore';
 // import { BestScores } from '../BestScores/BestScores';
-import { WorstScores } from '../WorstScores/WorstScores';
+import { LongestRides } from '../LongestRides/LongestRides';
 import { postCardCounts } from '../../api/postCardCounts';
 
 export const Game = () => {
@@ -169,7 +169,7 @@ export const Game = () => {
 
         <div className='flex gap-5 mt-8'>
           {/* <BestScores /> */}
-          <WorstScores />
+          <LongestRides />
         </div>
       </div>
     </>
