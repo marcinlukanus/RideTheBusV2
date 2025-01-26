@@ -1,5 +1,3 @@
-import './PartyBus.css';
-
 export const PartyBus = () => {
   return (
     <>
