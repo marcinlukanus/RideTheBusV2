@@ -6,16 +6,6 @@
   user-select: none; /* Prevent text selection */
 }
 
-.card {
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  position: absolute;
-  backface-visibility: hidden; /* Hide the back face when not visible */
-  transition: transform 0.6s; /* Add transition for transform */
-  transform-style: preserve-3d; /* Ensure 3D transformations are preserved */
-}
-
 .card-front,
 .card-back {
   width: 100%;
@@ -78,10 +68,6 @@
   transform: rotateY(180deg);
 }
 
-.hidden {
-  opacity: 0; /* Use opacity instead of visibility */
-}
-
 .corner {
   position: absolute;
   font-size: 3rem;
@@ -92,34 +78,6 @@
   @media (max-width: 600px) {
     font-size: 2rem;
   }
-}
-
-.top-left {
-  top: 10px;
-  left: 15px;
-}
-
-.bottom-right {
-  bottom: 10px;
-  right: 15px;
-  transform: rotate(180deg); /* Rotate the text */
-}
-
-.black {
-  color: black;
-}
-
-.red {
-  color: red;
-}
-
-.center-suit {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  font-size: 5rem; /* Increase size for better visibility */
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add text shadow for depth */
 }
 
 /* Responsive design */

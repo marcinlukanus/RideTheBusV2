@@ -47,15 +47,17 @@ export const Card = ({ rank, showCardBack, suit }: CardProps) => {
 
   return (
     <div className={`card-container ${showCardBack ? 'flipped' : ''}`}>
-      <div className='card'>
-        <div className={`card-front ${showCardBack ? 'hidden' : ''}`}>
-          <div className={`corner top-left ${color}`}>
+      <div className='h-full w-full rounded-[10px] absolute backface-hidden transition-transform duration-600 transform-3d card'>
+        <div className={`card-front ${showCardBack ? 'opacity-0' : ''}`}>
+          <div className={`corner top-2.5 left-3.5 text-${color}`}>
             {!showCardBack && cornerText}
           </div>
-          <div className='center-suit'>
+          <div className='flex justify-center items-center h-full'>
             {!showCardBack && renderCenterSuit(suit)}
           </div>
-          <div className={`corner bottom-right ${color}`}>
+          <div
+            className={`corner bottom-2.5 right-3.5 rotate-180 text-${color}`}
+          >
             {!showCardBack && cornerText}
           </div>
         </div>

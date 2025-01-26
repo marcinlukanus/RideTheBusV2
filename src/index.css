@@ -14,3 +14,11 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.text-red {
+  color: red;
+}
+
+.text-black {
+  color: black;
+}
