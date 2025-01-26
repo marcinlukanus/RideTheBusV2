@@ -1,4 +1,3 @@
-import './Game.css';
 import { Card } from '../Card/Card';
 import { useEffect } from 'react';
 import {
@@ -54,7 +53,11 @@ export const Game = () => {
             {(['red', 'black'] as RedOrBlack[]).map((color) => (
               <button
                 key={color}
-                className={color}
+                className={`py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md ${
+                  color === 'red'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-black text-white'
+                }`}
                 onClick={() => firstRound(color)}
               >
                 {color.charAt(0).toUpperCase() + color.slice(1).toLowerCase()}
@@ -69,7 +72,7 @@ export const Game = () => {
               (guess) => (
                 <button
                   key={guess}
-                  className={guess}
+                  className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md bg-white text-black'
                   onClick={() => secondRound(guess)}
                 >
                   {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
@@ -83,7 +86,11 @@ export const Game = () => {
           <>
             {(['inside', 'outside', 'same'] as InsideOutsideOrSame[]).map(
               (guess) => (
-                <button key={guess} onClick={() => thirdRound(guess)}>
+                <button
+                  key={guess}
+                  className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md bg-white text-black'
+                  onClick={() => thirdRound(guess)}
+                >
                   {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
                 </button>
               )
@@ -96,7 +103,11 @@ export const Game = () => {
             {suits.map((suit) => (
               <button
                 key={suit}
-                className={suit}
+                className={`py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md ${
+                  suit === 'HEARTS' || suit === 'DIAMONDS'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-black text-white'
+                }`}
                 onClick={() => finalRound(suit)}
               >
                 {suit.charAt(0).toUpperCase() + suit.slice(1).toLowerCase()}
@@ -113,8 +124,8 @@ export const Game = () => {
     <>
       {gameState.hasWon && <Confetti width={width} height={height} />}
 
-      <div className='game-container'>
-        <div className='cards'>
+      <div className='flex flex-col items-center justify-center'>
+        <div className='flex flex-wrap gap-5 justify-center'>
           {gameState.cards.map((card, index) => (
             <Card
               key={index}
@@ -126,9 +137,9 @@ export const Game = () => {
         </div>
 
         {gameState.isGameOver && (
-          <div className='options'>
+          <div className='flex mt-8'>
             <button
-              className='draw-cards'
+              className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-white text-black shadow-md active:translate-y-1'
               onClick={() =>
                 dispatch({
                   type: 'DRAW_CARDS',
@@ -143,18 +154,20 @@ export const Game = () => {
         )}
 
         {!gameState.isGameOver && (
-          <div className='game-buttons'>{renderButtons()}</div>
+          <div className='flex gap-5 mt-8'>{renderButtons()}</div>
         )}
 
         {gameState.isGameOver && (
-          <p className='end-state'>
+          <p className='mt-8 text-lg font-bold'>
             {gameState.hasWon ? 'You won!' : 'Take a drink!'}
           </p>
         )}
 
-        <p className='times-redrawn'>Times redrawn: {gameState.timesRedrawn}</p>
+        <p className='mt-4 text-xl font-bold'>
+          Times redrawn: {gameState.timesRedrawn}
+        </p>
 
-        <div className='leaderboards'>
+        <div className='flex gap-5 mt-8'>
           {/* <BestScores /> */}
           <WorstScores />
         </div>
