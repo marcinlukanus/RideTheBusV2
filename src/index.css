@@ -1,4 +1,5 @@
 @import './modern-noramlize.css';
+@import 'tailwindcss';
 
 :root {
   line-height: 1.5;
