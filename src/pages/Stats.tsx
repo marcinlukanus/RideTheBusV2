@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getCardCounts } from '../api/getCardCounts';
+import { CardCountBarChart } from '../components/CardCountBarChart/CardCountBarChart';
 
-type CardCount = {
+export type CardCount = {
   card_rank: string;
   card_suit: string;
   count: number;
@@ -35,7 +36,7 @@ const sortCardCounts = (cardCounts: CardCount[]): CardCount[] => {
   });
 };
 
-const Stats = (): JSX.Element => {
+export const Stats = (): JSX.Element => {
   const [cardCounts, setCardCounts] = useState<CardCount[]>([]);
 
   useEffect(() => {
@@ -48,22 +49,25 @@ const Stats = (): JSX.Element => {
   }, []);
 
   return (
-    <div>
-      <h1>Card Counts</h1>
-      <table>
+    <div className='p-4'>
+      <h1 className='mb-4 text-2xl font-bold'>Card Counts</h1>
+
+      <CardCountBarChart cardCounts={cardCounts} />
+
+      <table className='max-w-2xl w-full mx-auto'>
         <thead>
           <tr>
-            <th>Card</th>
-            <th>Count</th>
+            <th className='py-2 px-4 border-b'>Card</th>
+            <th className='py-2 px-4 border-b'>Count</th>
           </tr>
         </thead>
         <tbody>
           {cardCounts.map((cardCount) => (
             <tr key={`${cardCount.card_rank}${cardCount.card_suit}`}>
-              <td>
+              <td className='py-2 px-4 border-b'>
                 {cardCount.card_rank} of {cardCount.card_suit}
               </td>
-              <td>{cardCount.count}</td>
+              <td className='py-2 px-4 border-b'>{cardCount.count}</td>
             </tr>
           ))}
         </tbody>
@@ -71,5 +75,3 @@ const Stats = (): JSX.Element => {
     </div>
   );
 };
-
-export default Stats;
