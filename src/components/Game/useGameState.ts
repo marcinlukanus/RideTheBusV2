@@ -36,7 +36,7 @@ const values: Value[] = [
 const generateCards = () =>
   suits.flatMap((suit) => values.map((value) => ({ suit, values: value })));
 
-const drawCards = (amountToDraw: number): Card[] => {
+export const drawCards = (amountToDraw: number): Card[] => {
   const deck = generateCards();
   let selectedCards: Card[] = [];
 
