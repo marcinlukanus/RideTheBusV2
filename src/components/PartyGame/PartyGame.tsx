@@ -337,7 +337,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
 
           <div className='mt-8'>
             <h2 className='text-2xl font-bold mb-4'>Other Players</h2>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div className='gap-6'>
               {Object.entries(playersState)
                 .filter(([playerNickname]) => playerNickname !== nickname)
                 .map(([playerNickname, state]) => (
