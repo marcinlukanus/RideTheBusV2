@@ -99,6 +99,57 @@ export const PartyBus = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [error, setError] = useState('');
   const [roomId, setRoomId] = useState<string | null>(null);
+  const [showDancingUzbek, setShowDancingUzbek] = useState(false);
+
+  // Track konami code progress
+  const konamiCode = useRef([
+    'ArrowUp',
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowLeft',
+    'ArrowRight',
+    'b',
+    'a',
+  ]);
+  const konamiProgress = useRef<string[]>([]);
+
+  // Handle keydown events for Konami code
+  useEffect(() => {
+    if (!isHost || gameStarted || showNicknamePrompt) return;
+
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      const expectedKey =
+        konamiCode.current[konamiProgress.current.length].toLowerCase();
+
+      if (key === expectedKey) {
+        konamiProgress.current.push(key);
+
+        // Check if code is complete
+        if (konamiProgress.current.length === konamiCode.current.length) {
+          // Broadcast dancing Uzbek man to all players by updating room state
+          if (roomId) {
+            await supabase
+              .from('party_bus_rooms')
+              .update({ show_dancing_uzbek: true })
+              .eq('id', roomId);
+          }
+          konamiProgress.current = []; // Reset progress
+        }
+      } else {
+        konamiProgress.current = []; // Reset progress on wrong key
+        if (key === konamiCode.current[0].toLowerCase()) {
+          konamiProgress.current.push(key);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isHost, gameStarted, showNicknamePrompt, roomId]);
 
   // Track presence channel reference for cleanup
   const presenceRef = useRef<ReturnType<typeof supabase.channel>>();
@@ -138,6 +189,12 @@ export const PartyBus = () => {
             // Check if game has started
             if (payload.new && payload.new.game_started) {
               setGameStarted(true);
+            }
+            // Check if dancing Uzbek man should be shown
+            if (payload.new && payload.new.show_dancing_uzbek) {
+              setShowDancingUzbek(true);
+            } else {
+              setShowDancingUzbek(false);
             }
           }
         )
@@ -436,7 +493,7 @@ export const PartyBus = () => {
     try {
       const { error: updateError } = await supabase
         .from('party_bus_rooms')
-        .update({ game_started: true })
+        .update({ game_started: true, show_dancing_uzbek: false })
         .eq('id', roomId);
 
       if (updateError) throw updateError;
@@ -462,7 +519,7 @@ export const PartyBus = () => {
       )}
 
       {!showNicknamePrompt && !gameStarted && (
-        <div className='mt-8 p-6 bg-gray-800 rounded-lg'>
+        <div className='mt-8 p-6 bg-gray-800 rounded-lg relative'>
           <h2 className='text-2xl font-bold mb-4'>Game Lobby</h2>
 
           {roomCode && (
@@ -495,6 +552,33 @@ export const PartyBus = () => {
             >
               Start Game
             </button>
+          )}
+
+          {/* Dancing Uzbek Man Easter Egg */}
+          {showDancingUzbek && (
+            <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-10'>
+              <div className='text-center'>
+                <div className='text-6xl animate-bounce mb-4'>🕺</div>
+                <div className='text-2xl font-bold text-yellow-400 animate-pulse'>
+                  VERY NICE! GREAT SUCCESS!
+                </div>
+                {isHost && (
+                  <button
+                    className='mt-4 px-4 py-2 bg-purple-500 rounded-lg text-white'
+                    onClick={async () => {
+                      if (roomId) {
+                        await supabase
+                          .from('party_bus_rooms')
+                          .update({ show_dancing_uzbek: false })
+                          .eq('id', roomId);
+                      }
+                    }}
+                  >
+                    High Five! ✋
+                  </button>
+                )}
+              </div>
+            </div>
           )}
         </div>
       )}
