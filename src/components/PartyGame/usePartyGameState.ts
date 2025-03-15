@@ -149,7 +149,10 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     }
   };
 
-  const redrawCards = async (hasWon: boolean) => {
+  const redrawCards = async (
+    hasWon: boolean,
+    isInitialDraw: boolean = false
+  ) => {
     // Draw new cards first
     const newCards = drawCards(4);
 
@@ -159,7 +162,7 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       currentRound: 1,
       hasWon: false,
       isGameOver: false,
-      timesRedrawn: hasWon ? 0 : gameState.timesRedrawn + 1,
+      timesRedrawn: isInitialDraw ? 0 : hasWon ? 0 : gameState.timesRedrawn + 1,
     };
 
     try {
@@ -167,7 +170,7 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       dispatch({
         type: 'DRAW_CARDS',
         amountToDraw: 4,
-        resetScore: hasWon,
+        resetScore: hasWon || isInitialDraw,
       });
 
       // Wait a bit for state to update

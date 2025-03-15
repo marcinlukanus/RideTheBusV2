@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
 import { PartyGame } from '../components/PartyGame/PartyGame';
-import { Database } from '../../database.types';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { generateRoomId } from '../utils/generateRoomId';
+import { RoomLink } from '../components/RoomLink/RoomLink';
 
 type NicknameModalProps = {
   onSubmit: (nickname: string) => void;
+  isJoining?: boolean;
 };
 
 type Player = {
@@ -20,47 +22,62 @@ type GameState = {
   timesRedrawn: number;
 };
 
-type RealtimeRoomPayload = RealtimePostgresChangesPayload<
-  Database['public']['Tables']['party_bus_rooms']['Row']
->;
-
-const NicknameModal = ({ onSubmit }: NicknameModalProps) => {
+const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
   const [nickname, setNickname] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = () => {
+    if (nickname.length < 2) {
+      setError('Nickname must be at least 2 characters long');
+      return;
+    }
+    onSubmit(nickname);
+  };
 
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-      <div className='bg-gray-800 p-6 rounded-lg'>
-        <h3 className='text-xl font-bold mb-4'>Enter your nickname</h3>
-        <input
-          type='text'
-          className='border p-2 rounded bg-gray-700 text-white'
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter' && nickname) {
-              onSubmit(nickname);
-            }
-          }}
-          placeholder='Your nickname'
-        />
-        <button
-          className='ml-2 py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-400'
-          onClick={() => nickname && onSubmit(nickname)}
-        >
-          Join
-        </button>
+      <div className='bg-gray-800 p-6 rounded-lg w-96'>
+        <h3 className='text-xl font-bold mb-4'>
+          {isJoining ? 'Enter nickname to join' : 'Enter your nickname'}
+        </h3>
+        <div className='space-y-4'>
+          <input
+            type='text'
+            className='w-full px-4 py-2 bg-gray-700 rounded-lg text-white'
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && nickname) {
+                handleSubmit();
+              }
+            }}
+            placeholder='Your nickname'
+            minLength={2}
+            maxLength={20}
+          />
+          {error && <p className='text-red-500 text-sm'>{error}</p>}
+          <button
+            className='w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+            onClick={handleSubmit}
+          >
+            {isJoining ? 'Join Game' : 'Create Room'}
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export const PartyBus = () => {
-  const [roomId, setRoomId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { roomCode } = useParams();
   const [isHost, setIsHost] = useState(false);
   const [nickname, setNickname] = useState<string | null>(null);
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [error, setError] = useState('');
+  const [roomId, setRoomId] = useState<string | null>(null);
 
   useEffect(() => {
     if (roomId) {
@@ -82,8 +99,8 @@ export const PartyBus = () => {
         )
         .subscribe();
 
-      // Subscribe to room status updates
-      const roomChannel = supabase
+      // Subscribe to game status updates
+      const gameStatusChannel = supabase
         .channel(`room-status:${roomId}`)
         .on(
           'postgres_changes',
@@ -93,10 +110,9 @@ export const PartyBus = () => {
             table: 'party_bus_rooms',
             filter: `id=eq.${roomId}`,
           },
-          (payload: RealtimeRoomPayload) => {
-            const newRoom =
-              payload.new as Database['public']['Tables']['party_bus_rooms']['Row'];
-            if (newRoom && newRoom.status === 'in_progress') {
+          (payload) => {
+            // Check if game has started
+            if (payload.new && payload.new.game_started) {
               setGameStarted(true);
             }
           }
@@ -106,23 +122,21 @@ export const PartyBus = () => {
       // Initial players fetch
       fetchPlayers();
 
-      // Initial room status fetch
+      // Initial game status fetch
       supabase
         .from('party_bus_rooms')
-        .select()
+        .select('game_started')
         .eq('id', roomId)
         .single()
         .then(({ data }) => {
-          const room =
-            data as Database['public']['Tables']['party_bus_rooms']['Row'];
-          if (room && room.status === 'in_progress') {
+          if (data && data.game_started) {
             setGameStarted(true);
           }
         });
 
       return () => {
         supabase.removeChannel(playersChannel);
-        supabase.removeChannel(roomChannel);
+        supabase.removeChannel(gameStatusChannel);
       };
     }
   }, [roomId]);
@@ -140,76 +154,138 @@ export const PartyBus = () => {
     }
   };
 
-  const createRoom = async () => {
-    if (!nickname) return;
+  const createRoom = async (nickname: string) => {
+    try {
+      // Generate a friendly room code
+      const newRoomCode = generateRoomId();
 
-    const { data, error } = await supabase
-      .from('party_bus_rooms')
-      .insert<Database['public']['Tables']['party_bus_rooms']['Insert']>([
-        {
+      // Create the room
+      const { data: room, error: roomError } = await supabase
+        .from('party_bus_rooms')
+        .insert({
+          room_code: newRoomCode,
           host_nickname: nickname,
-          status: 'waiting',
-        },
-      ])
-      .select()
-      .single();
+          game_started: false,
+        })
+        .select()
+        .single();
 
-    if (data) {
-      setRoomId(data.id);
+      if (roomError) throw roomError;
+
+      // Add the host as first player
+      const { error: playerError } = await supabase
+        .from('party_bus_players')
+        .insert({
+          room_id: room.id,
+          nickname: nickname,
+          game_state: {
+            cards: [],
+            currentRound: 1,
+            hasWon: false,
+            isGameOver: false,
+            timesRedrawn: 0,
+            nickname: nickname,
+          } as GameState,
+        });
+
+      if (playerError) throw playerError;
+
+      setNickname(nickname);
       setIsHost(true);
-      // Also join as a player
-      await supabase
-        .from('party_bus_players')
-        .insert<Database['public']['Tables']['party_bus_players']['Insert']>([
-          {
-            room_id: data.id,
-            nickname: nickname,
-            game_state: {
-              cards: [],
-              currentRound: 1,
-              hasWon: false,
-              isGameOver: false,
-              timesRedrawn: -1,
-            } as GameState,
-          },
-        ]);
+      setShowNicknamePrompt(false);
+      setRoomId(room.id);
+      navigate(`/party-bus/${newRoomCode}`);
+    } catch (err) {
+      console.error('Error creating room:', err);
+      setError('Failed to create room. Please try again.');
     }
   };
 
-  const joinRoom = async (roomIdToJoin: string) => {
-    if (!nickname) return;
+  const joinRoom = async (nickname: string) => {
+    if (!roomCode) return;
 
-    const { data: room } = await supabase
-      .from('party_bus_rooms')
-      .select()
-      .eq('id', roomIdToJoin)
-      .single();
+    try {
+      // Check if room exists using room_code
+      const { data: room, error: roomError } = await supabase
+        .from('party_bus_rooms')
+        .select('id, room_code, host_nickname')
+        .eq('room_code', roomCode)
+        .single();
 
-    const typedRoom =
-      room as Database['public']['Tables']['party_bus_rooms']['Row'];
-    if (typedRoom && typedRoom.status === 'waiting') {
-      await supabase
+      if (roomError || !room) {
+        setError('Room not found. Please check the room code.');
+        return;
+      }
+
+      // Check if nickname is already taken in this room
+      const { data: existingPlayers, error: playerError } = await supabase
         .from('party_bus_players')
-        .insert<Database['public']['Tables']['party_bus_players']['Insert']>([
-          {
-            room_id: roomIdToJoin,
+        .select('nickname')
+        .eq('room_id', room.id)
+        .eq('nickname', nickname);
+
+      if (playerError) {
+        setError('Error checking nickname availability.');
+        return;
+      }
+
+      if (existingPlayers && existingPlayers.length > 0) {
+        setError('Nickname already taken in this room. Please choose another.');
+        return;
+      }
+
+      // Add player to room
+      const { error: joinError } = await supabase
+        .from('party_bus_players')
+        .insert({
+          room_id: room.id,
+          nickname: nickname,
+          game_state: {
+            cards: [],
+            currentRound: 1,
+            hasWon: false,
+            isGameOver: false,
+            timesRedrawn: 0,
             nickname: nickname,
-            game_state: {
-              cards: [],
-              currentRound: 1,
-              hasWon: false,
-              isGameOver: false,
-              timesRedrawn: -1,
-            } as GameState,
-          },
-        ]);
-      setRoomId(roomIdToJoin);
+          } as GameState,
+        });
+
+      if (joinError) throw joinError;
+
+      setNickname(nickname);
+      setShowNicknamePrompt(false);
+      setRoomId(room.id);
+      setIsHost(room.host_nickname === nickname);
+    } catch (err) {
+      console.error('Error joining room:', err);
+      setError('Failed to join room. Please try again.');
     }
   };
 
-  const handleNicknameSubmit = (name: string) => {
-    setNickname(name);
-    setShowNicknamePrompt(false);
+  const handleNicknameSubmit = async (name: string) => {
+    if (roomCode) {
+      await joinRoom(name);
+    } else {
+      await createRoom(name);
+    }
+  };
+
+  const startGame = async () => {
+    if (!roomId) return;
+
+    try {
+      const { error: updateError } = await supabase
+        .from('party_bus_rooms')
+        .update({ game_started: true })
+        .eq('id', roomId);
+
+      if (updateError) throw updateError;
+
+      setGameStarted(true);
+    } catch (err) {
+      console.error('Error starting game:', err);
+      setError('Failed to start game. Please try again.');
+    }
   };
 
   return (
@@ -221,32 +297,19 @@ export const PartyBus = () => {
         The best single-player drinking game, now with friends!
       </h4>
 
-      {showNicknamePrompt && <NicknameModal onSubmit={handleNicknameSubmit} />}
-
-      {!showNicknamePrompt && !roomId && (
-        <div className='flex gap-4'>
-          <button
-            className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-blue-500 text-white shadow-md'
-            onClick={createRoom}
-          >
-            Create New Game
-          </button>
-          <button
-            className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-green-500 text-white shadow-md'
-            onClick={() => {
-              const id = prompt('Enter room ID:');
-              if (id) joinRoom(id);
-            }}
-          >
-            Join Game
-          </button>
-        </div>
+      {showNicknamePrompt && (
+        <NicknameModal onSubmit={handleNicknameSubmit} isJoining={!!roomCode} />
       )}
 
-      {roomId && !gameStarted && (
+      {!showNicknamePrompt && !gameStarted && (
         <div className='mt-8 p-6 bg-gray-800 rounded-lg'>
-          <h2 className='text-2xl font-bold mb-4'>Lobby</h2>
-          <p className='mb-4'>Room ID: {roomId}</p>
+          <h2 className='text-2xl font-bold mb-4'>Game Lobby</h2>
+
+          {roomCode && (
+            <div className='mb-6'>
+              <RoomLink roomId={roomCode} />
+            </div>
+          )}
 
           <div className='mb-6'>
             <h3 className='text-xl font-bold mb-2'>Players</h3>
@@ -268,13 +331,7 @@ export const PartyBus = () => {
           {isHost && (
             <button
               className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-purple-500 text-white shadow-md'
-              onClick={() => {
-                supabase
-                  .from('party_bus_rooms')
-                  .update({ status: 'in_progress' })
-                  .eq('id', roomId)
-                  .then(() => setGameStarted(true));
-              }}
+              onClick={startGame}
             >
               Start Game
             </button>
@@ -282,8 +339,14 @@ export const PartyBus = () => {
         </div>
       )}
 
-      {roomId && gameStarted && nickname && (
+      {!showNicknamePrompt && gameStarted && roomId && nickname && (
         <PartyGame roomId={roomId} nickname={nickname} />
+      )}
+
+      {error && (
+        <div className='mt-4 p-4 bg-red-500 bg-opacity-20 rounded-lg text-red-100'>
+          {error}
+        </div>
       )}
     </div>
   );

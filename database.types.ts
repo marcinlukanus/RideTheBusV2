@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
       card_counts: {
@@ -50,52 +50,49 @@ export type Database = {
       };
       party_bus_rooms: {
         Row: {
-          id: string;
-          host_nickname: string;
-          status: 'waiting' | 'in_progress' | 'completed';
           created_at: string;
+          id: string;
+          room_code: string;
+          host_nickname: string;
+          game_started: boolean;
         };
         Insert: {
-          id?: string;
-          host_nickname: string;
-          status?: 'waiting' | 'in_progress' | 'completed';
           created_at?: string;
+          id?: string;
+          room_code: string;
+          host_nickname: string;
+          game_started?: boolean;
         };
         Update: {
-          id?: string;
-          host_nickname?: string;
-          status?: 'waiting' | 'in_progress' | 'completed';
           created_at?: string;
+          id?: string;
+          room_code?: string;
+          host_nickname?: string;
+          game_started?: boolean;
         };
         Relationships: [];
       };
       party_bus_players: {
         Row: {
-          id: string;
-          room_id: string;
-          nickname: string;
-          game_state: Json;
-          score: number;
-          game_completed: boolean;
           created_at: string;
+          game_state: Json;
+          id: string;
+          nickname: string;
+          room_id: string;
         };
         Insert: {
-          id?: string;
-          room_id: string;
-          nickname: string;
-          game_state?: Json;
-          score?: number;
-          game_completed?: boolean;
           created_at?: string;
+          game_state: Json;
+          id?: string;
+          nickname: string;
+          room_id: string;
         };
         Update: {
-          id?: string;
-          room_id?: string;
-          nickname?: string;
-          game_state?: Json;
-          score?: number;
-          game_completed?: boolean;
           created_at?: string;
+          game_state?: Json;
+          id?: string;
+          nickname?: string;
+          room_id?: string;
         };
         Relationships: [
           {
@@ -127,7 +124,7 @@ export type Database = {
       [_ in never]: never;
     };
   };
-};
+}
 
 type PublicSchema = Database[Extract<keyof Database, 'public'>];
 

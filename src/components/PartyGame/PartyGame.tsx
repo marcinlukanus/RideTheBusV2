@@ -72,7 +72,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
           await new Promise((resolve) => setTimeout(resolve, 100));
 
           // 3. Draw initial cards using redrawCards (which handles state sync properly)
-          await redrawCards(false);
+          await redrawCards(false, true);
         }
       } catch (error) {
         console.error('Error initializing game:', error);
