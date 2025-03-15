@@ -6,7 +6,7 @@ import { generateRoomId } from '../utils/generateRoomId';
 import { RoomLink } from '../components/RoomLink/RoomLink';
 
 type NicknameModalProps = {
-  onSubmit: (nickname: string) => void;
+  onSubmit: (nickname: string) => Promise<string | undefined>;
   isJoining?: boolean;
 };
 
@@ -25,13 +25,25 @@ type GameState = {
 const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (nickname.length < 2) {
       setError('Nickname must be at least 2 characters long');
       return;
     }
-    onSubmit(nickname);
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const error = await onSubmit(nickname);
+      if (error) {
+        setError(error);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -45,22 +57,31 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
             type='text'
             className='w-full px-4 py-2 bg-gray-700 rounded-lg text-white'
             value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            onChange={(e) => {
+              setNickname(e.target.value);
+              setError(''); // Clear error when user types
+            }}
             onKeyPress={(e) => {
-              if (e.key === 'Enter' && nickname) {
+              if (e.key === 'Enter' && nickname && !isSubmitting) {
                 handleSubmit();
               }
             }}
             placeholder='Your nickname'
             minLength={2}
             maxLength={20}
+            disabled={isSubmitting}
           />
           {error && <p className='text-red-500 text-sm'>{error}</p>}
           <button
-            className='w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+            className='w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             onClick={handleSubmit}
+            disabled={isSubmitting}
           >
-            {isJoining ? 'Join Game' : 'Create Room'}
+            {isSubmitting
+              ? 'Please wait...'
+              : isJoining
+              ? 'Join Game'
+              : 'Create Room'}
           </button>
         </div>
       </div>
@@ -154,119 +175,118 @@ export const PartyBus = () => {
     }
   };
 
-  const createRoom = async (nickname: string) => {
-    try {
-      // Generate a friendly room code
-      const newRoomCode = generateRoomId();
+  const handleNicknameSubmit = async (
+    name: string
+  ): Promise<string | undefined> => {
+    setError('');
 
-      // Create the room
-      const { data: room, error: roomError } = await supabase
-        .from('party_bus_rooms')
-        .insert({
-          room_code: newRoomCode,
-          host_nickname: nickname,
-          game_started: false,
-        })
-        .select()
-        .single();
-
-      if (roomError) throw roomError;
-
-      // Add the host as first player
-      const { error: playerError } = await supabase
-        .from('party_bus_players')
-        .insert({
-          room_id: room.id,
-          nickname: nickname,
-          game_state: {
-            cards: [],
-            currentRound: 1,
-            hasWon: false,
-            isGameOver: false,
-            timesRedrawn: 0,
-            nickname: nickname,
-          } as GameState,
-        });
-
-      if (playerError) throw playerError;
-
-      setNickname(nickname);
-      setIsHost(true);
-      setShowNicknamePrompt(false);
-      setRoomId(room.id);
-      navigate(`/party-bus/${newRoomCode}`);
-    } catch (err) {
-      console.error('Error creating room:', err);
-      setError('Failed to create room. Please try again.');
-    }
-  };
-
-  const joinRoom = async (nickname: string) => {
-    if (!roomCode) return;
-
-    try {
-      // Check if room exists using room_code
-      const { data: room, error: roomError } = await supabase
-        .from('party_bus_rooms')
-        .select('id, room_code, host_nickname')
-        .eq('room_code', roomCode)
-        .single();
-
-      if (roomError || !room) {
-        setError('Room not found. Please check the room code.');
-        return;
-      }
-
-      // Check if nickname is already taken in this room
-      const { data: existingPlayers, error: playerError } = await supabase
-        .from('party_bus_players')
-        .select('nickname')
-        .eq('room_id', room.id)
-        .eq('nickname', nickname);
-
-      if (playerError) {
-        setError('Error checking nickname availability.');
-        return;
-      }
-
-      if (existingPlayers && existingPlayers.length > 0) {
-        setError('Nickname already taken in this room. Please choose another.');
-        return;
-      }
-
-      // Add player to room
-      const { error: joinError } = await supabase
-        .from('party_bus_players')
-        .insert({
-          room_id: room.id,
-          nickname: nickname,
-          game_state: {
-            cards: [],
-            currentRound: 1,
-            hasWon: false,
-            isGameOver: false,
-            timesRedrawn: 0,
-            nickname: nickname,
-          } as GameState,
-        });
-
-      if (joinError) throw joinError;
-
-      setNickname(nickname);
-      setShowNicknamePrompt(false);
-      setRoomId(room.id);
-      setIsHost(room.host_nickname === nickname);
-    } catch (err) {
-      console.error('Error joining room:', err);
-      setError('Failed to join room. Please try again.');
-    }
-  };
-
-  const handleNicknameSubmit = async (name: string) => {
     if (roomCode) {
-      await joinRoom(name);
+      try {
+        // Check if room exists using room_code
+        const { data: room, error: roomError } = await supabase
+          .from('party_bus_rooms')
+          .select('id, room_code, host_nickname')
+          .eq('room_code', roomCode)
+          .single();
+
+        if (roomError || !room) {
+          return 'Room not found. Please check the room code.';
+        }
+
+        // Check if nickname is already taken in this room
+        const { data: existingPlayers, error: playerError } = await supabase
+          .from('party_bus_players')
+          .select('nickname')
+          .eq('room_id', room.id)
+          .eq('nickname', name);
+
+        if (playerError) {
+          return 'Error checking nickname availability.';
+        }
+
+        if (existingPlayers && existingPlayers.length > 0) {
+          return 'Nickname already taken in this room. Please choose another.';
+        }
+
+        // Add player to room
+        const { error: joinError } = await supabase
+          .from('party_bus_players')
+          .insert({
+            room_id: room.id,
+            nickname: name,
+            game_state: {
+              cards: [],
+              currentRound: 1,
+              hasWon: false,
+              isGameOver: false,
+              timesRedrawn: 0,
+              nickname: name,
+            } as GameState,
+          });
+
+        if (joinError) {
+          return 'Failed to join room. Please try again.';
+        }
+
+        setNickname(name);
+        setShowNicknamePrompt(false);
+        setRoomId(room.id);
+        setIsHost(room.host_nickname === name);
+        return undefined;
+      } catch (err) {
+        console.error('Error joining room:', err);
+        return 'Failed to join room. Please try again.';
+      }
     } else {
-      await createRoom(name);
+      try {
+        // Generate a friendly room code
+        const newRoomCode = generateRoomId();
+
+        // Create the room
+        const { data: room, error: roomError } = await supabase
+          .from('party_bus_rooms')
+          .insert({
+            room_code: newRoomCode,
+            host_nickname: name,
+            game_started: false,
+          })
+          .select()
+          .single();
+
+        if (roomError) {
+          return 'Failed to create room. Please try again.';
+        }
+
+        // Add the host as first player
+        const { error: playerError } = await supabase
+          .from('party_bus_players')
+          .insert({
+            room_id: room.id,
+            nickname: name,
+            game_state: {
+              cards: [],
+              currentRound: 1,
+              hasWon: false,
+              isGameOver: false,
+              timesRedrawn: 0,
+              nickname: name,
+            } as GameState,
+          });
+
+        if (playerError) {
+          return 'Failed to create room. Please try again.';
+        }
+
+        setNickname(name);
+        setIsHost(true);
+        setShowNicknamePrompt(false);
+        setRoomId(room.id);
+        navigate(`/party-bus/${newRoomCode}`);
+        return undefined;
+      } catch (err) {
+        console.error('Error creating room:', err);
+        return 'Failed to create room. Please try again.';
+      }
     }
   };
 
