@@ -48,51 +48,39 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
   } = usePartyGameState(roomId, nickname);
 
   useEffect(() => {
-    // Fetch initial state of all players
-    const fetchInitialState = async () => {
-      const { data: players } = await supabase
-        .from('party_bus_players')
-        .select('*')
-        .eq('room_id', roomId);
+    const initializeGame = async () => {
+      try {
+        // 1. First fetch all players' states
+        const { data: players } = await supabase
+          .from('party_bus_players')
+          .select('*')
+          .eq('room_id', roomId);
 
-      if (players) {
-        // Update state for each player
-        players.forEach((player) => {
-          if (player.game_state && player.nickname !== nickname) {
-            dispatch({
-              type: 'UPDATE_PLAYER_STATE',
-              nickname: player.nickname,
-              state: player.game_state as PlayerState,
-            });
-          }
-        });
+        if (players) {
+          // Update state for each player
+          players.forEach((player) => {
+            if (player.game_state && player.nickname !== nickname) {
+              dispatch({
+                type: 'UPDATE_PLAYER_STATE',
+                nickname: player.nickname,
+                state: player.game_state as PlayerState,
+              });
+            }
+          });
+
+          // 2. Wait a bit to ensure player states are updated
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // 3. Draw initial cards using redrawCards (which handles state sync properly)
+          await redrawCards(false);
+        }
+      } catch (error) {
+        console.error('Error initializing game:', error);
       }
     };
 
-    // Draw initial cards and sync them
-    const drawInitialCards = async () => {
-      // Draw cards first
-      dispatch({ type: 'DRAW_CARDS', amountToDraw: 4, resetScore: false });
-
-      // Wait for state to update
-      setTimeout(async () => {
-        // Then sync to Supabase
-        await supabase
-          .from('party_bus_players')
-          .update({
-            game_state: {
-              nickname,
-              ...gameState,
-              cards: gameState.cards,
-            },
-          })
-          .eq('room_id', roomId)
-          .eq('nickname', nickname);
-      }, 0);
-    };
-
-    // First fetch initial state, then draw cards
-    fetchInitialState().then(() => drawInitialCards());
+    // Initialize the game
+    initializeGame();
 
     // Subscribe to room updates
     const channel = supabase
@@ -213,13 +201,72 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       </div>
       {playerState.isGameOver && (
         <p className='mt-4 text-lg font-bold'>
-          {playerState.hasWon ? 'Won!' : 'Game Over!'}
+          {playerState.hasWon ? 'Finished!' : 'Game Over!'}
         </p>
       )}
       <p className='mt-2 text-lg'>Round: {playerState.currentRound}</p>
       <p className='mt-2 text-lg'>Times redrawn: {playerState.timesRedrawn}</p>
     </div>
   );
+
+  const renderLeaderboard = () => {
+    // Get all players including current player
+    const allPlayers = [
+      {
+        nickname,
+        timesRedrawn: gameState.timesRedrawn,
+        isGameOver: gameState.isGameOver,
+      },
+      ...Object.entries(playersState).map(([playerNickname, state]) => ({
+        nickname: playerNickname,
+        timesRedrawn: state.timesRedrawn,
+        isGameOver: state.isGameOver,
+      })),
+    ];
+
+    // Check if all players have finished
+    const allFinished = allPlayers.every((player) => player.isGameOver);
+
+    if (!allFinished) return null;
+
+    // Sort players by score (times redrawn)
+    const sortedPlayers = allPlayers.sort(
+      (a, b) => a.timesRedrawn - b.timesRedrawn
+    );
+    const winner = sortedPlayers[0];
+
+    return (
+      <div className='mt-12 p-8 bg-gray-800 rounded-lg'>
+        <h2 className='text-3xl font-bold mb-6 text-center'>
+          🏆 Final Results 🏆
+        </h2>
+        <div className='space-y-4'>
+          {sortedPlayers.map((player, index) => (
+            <div
+              key={player.nickname}
+              className={`flex justify-between items-center p-4 rounded-lg ${
+                index === 0 ? 'bg-yellow-500/20' : 'bg-gray-700'
+              }`}
+            >
+              <div className='flex items-center gap-3'>
+                <span className='text-xl font-bold'>{index + 1}.</span>
+                <span className='text-xl'>{player.nickname}</span>
+                {index === 0 && <span className='text-2xl'>👑</span>}
+              </div>
+              <div className='text-xl'>
+                {player.timesRedrawn}{' '}
+                {player.timesRedrawn === 1 ? 'redraw' : 'redraws'}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className='text-center mt-6 text-xl font-bold'>
+          🎉 {winner.nickname} wins with {winner.timesRedrawn}{' '}
+          {winner.timesRedrawn === 1 ? 'redraw' : 'redraws'}! 🎉
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className='container mx-auto px-4'>
@@ -237,13 +284,13 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
             ))}
           </div>
 
-          {gameState.isGameOver && (
+          {gameState.isGameOver && !gameState.hasWon && (
             <div className='flex mt-8'>
               <button
                 className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-white text-black shadow-md active:translate-y-1'
-                onClick={() => redrawCards(gameState.hasWon)}
+                onClick={() => redrawCards(false)}
               >
-                {gameState.hasWon ? 'Another Ride?' : 'Redraw Cards'}
+                Redraw Cards
               </button>
             </div>
           )}
@@ -254,7 +301,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
 
           {gameState.isGameOver && (
             <p className='mt-8 text-lg font-bold'>
-              {gameState.hasWon ? 'You won!' : 'Take a drink!'}
+              {gameState.hasWon ? 'Finished! High five! ✋' : 'Take a drink!'}
             </p>
           )}
 
@@ -263,6 +310,8 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
           </p>
         </div>
       </div>
+
+      {renderLeaderboard()}
 
       <div className='mt-8'>
         <h2 className='text-2xl font-bold mb-4'>Other Players</h2>

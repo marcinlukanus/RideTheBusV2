@@ -120,7 +120,7 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       currentRound: 1,
       hasWon: false,
       isGameOver: false,
-      timesRedrawn: -1,
+      timesRedrawn: 0,
     },
     playersState: {},
   });
@@ -150,7 +150,10 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
   };
 
   const redrawCards = async (hasWon: boolean) => {
+    // Draw new cards first
     const newCards = drawCards(4);
+
+    // Create the new state
     const newState = {
       cards: newCards,
       currentRound: 1,
@@ -159,11 +162,32 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       timesRedrawn: hasWon ? 0 : gameState.timesRedrawn + 1,
     };
 
-    await syncGameState(newState, {
-      type: 'DRAW_CARDS',
-      amountToDraw: 4,
-      resetScore: hasWon,
-    });
+    try {
+      // Update local state first
+      dispatch({
+        type: 'DRAW_CARDS',
+        amountToDraw: 4,
+        resetScore: hasWon,
+      });
+
+      // Wait a bit for state to update
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Then sync to Supabase with the complete state
+      await supabase
+        .from('party_bus_players')
+        .update({
+          game_state: {
+            nickname,
+            ...newState,
+            cards: newCards, // Use the new cards directly to ensure they're included
+          },
+        })
+        .eq('room_id', roomId)
+        .eq('nickname', nickname);
+    } catch (error) {
+      console.error('Error redrawing cards:', error);
+    }
   };
 
   const firstRound = async (color: RedOrBlack) => {
