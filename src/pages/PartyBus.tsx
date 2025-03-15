@@ -52,7 +52,7 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
         <h3 className='text-xl font-bold mb-4'>
           {isJoining ? 'Enter nickname to join' : 'Enter your nickname'}
         </h3>
-        <div className='space-y-4'>
+        <div className='flex flex-col gap-4 space-y-4'>
           <input
             type='text'
             className='w-full px-4 py-2 bg-gray-700 rounded-lg text-white'
