@@ -149,6 +149,23 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     }
   };
 
+  const redrawCards = async (hasWon: boolean) => {
+    const newCards = drawCards(4);
+    const newState = {
+      cards: newCards,
+      currentRound: 1,
+      hasWon: false,
+      isGameOver: false,
+      timesRedrawn: hasWon ? 0 : gameState.timesRedrawn + 1,
+    };
+
+    await syncGameState(newState, {
+      type: 'DRAW_CARDS',
+      amountToDraw: 4,
+      resetScore: hasWon,
+    });
+  };
+
   const firstRound = async (color: RedOrBlack) => {
     const card = gameState.cards[0];
     const isRed = card.suit === 'HEARTS' || card.suit === 'DIAMONDS';
@@ -276,5 +293,6 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     secondRound,
     thirdRound,
     finalRound,
+    redrawCards,
   };
 };

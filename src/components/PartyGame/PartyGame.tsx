@@ -44,9 +44,31 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
     secondRound,
     thirdRound,
     finalRound,
+    redrawCards,
   } = usePartyGameState(roomId, nickname);
 
   useEffect(() => {
+    // Fetch initial state of all players
+    const fetchInitialState = async () => {
+      const { data: players } = await supabase
+        .from('party_bus_players')
+        .select('*')
+        .eq('room_id', roomId);
+
+      if (players) {
+        // Update state for each player
+        players.forEach((player) => {
+          if (player.game_state && player.nickname !== nickname) {
+            dispatch({
+              type: 'UPDATE_PLAYER_STATE',
+              nickname: player.nickname,
+              state: player.game_state as PlayerState,
+            });
+          }
+        });
+      }
+    };
+
     // Draw initial cards and sync them
     const drawInitialCards = async () => {
       // Draw cards first
@@ -69,7 +91,8 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       }, 0);
     };
 
-    drawInitialCards();
+    // First fetch initial state, then draw cards
+    fetchInitialState().then(() => drawInitialCards());
 
     // Subscribe to room updates
     const channel = supabase
@@ -99,22 +122,6 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  // Add effect to sync initial state when cards are drawn
-  useEffect(() => {
-    if (gameState.cards.length > 0) {
-      supabase
-        .from('party_bus_players')
-        .update({
-          game_state: {
-            nickname,
-            ...gameState,
-          },
-        })
-        .eq('room_id', roomId)
-        .eq('nickname', nickname);
-    }
-  }, [gameState.cards.length]);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {
@@ -234,13 +241,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
             <div className='flex mt-8'>
               <button
                 className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-white text-black shadow-md active:translate-y-1'
-                onClick={() =>
-                  dispatch({
-                    type: 'DRAW_CARDS',
-                    amountToDraw: 4,
-                    resetScore: gameState.hasWon,
-                  })
-                }
+                onClick={() => redrawCards(gameState.hasWon)}
               >
                 {gameState.hasWon ? 'Another Ride?' : 'Redraw Cards'}
               </button>
