@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
 import { PartyGame } from '../components/PartyGame/PartyGame';
@@ -100,8 +100,11 @@ export const PartyBus = () => {
   const [error, setError] = useState('');
   const [roomId, setRoomId] = useState<string | null>(null);
 
+  // Track presence channel reference for cleanup
+  const presenceRef = useRef<ReturnType<typeof supabase.channel>>();
+
   useEffect(() => {
-    if (roomId) {
+    if (roomId && nickname) {
       // Subscribe to room updates
       const playersChannel = supabase
         .channel(`room-players:${roomId}`)
@@ -140,6 +143,65 @@ export const PartyBus = () => {
         )
         .subscribe();
 
+      // Set up presence tracking
+      const presenceChannel = supabase.channel(`presence:${roomId}`, {
+        config: {
+          presence: {
+            key: nickname,
+          },
+        },
+      });
+
+      let presenceTimeout: number;
+
+      presenceChannel
+        .on('presence', { event: 'sync' }, () => {
+          const state = presenceChannel.presenceState();
+          const presentPlayers = Object.keys(state);
+
+          // Clear any pending timeout
+          if (presenceTimeout) {
+            window.clearTimeout(presenceTimeout);
+          }
+
+          // Set a small timeout to allow for brief disconnections
+          presenceTimeout = window.setTimeout(async () => {
+            // Get current players from database
+            const { data: currentPlayers } = await supabase
+              .from('party_bus_players')
+              .select('nickname')
+              .eq('room_id', roomId);
+
+            if (currentPlayers) {
+              // Remove players that are in database but not in presence
+              currentPlayers.forEach(async (player) => {
+                if (!presentPlayers.includes(player.nickname)) {
+                  await removePlayer(player.nickname);
+                }
+              });
+            }
+          }, 2000); // 2 second grace period for reconnection
+        })
+        .on('presence', { event: 'join' }, ({ key }: { key: string }) => {
+          console.log('Player joined:', key);
+          fetchPlayers();
+        })
+        .on('presence', { event: 'leave' }, ({ key }: { key: string }) => {
+          console.log('Player left:', key);
+          removePlayer(key);
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            // Track this player's presence
+            await presenceChannel.track({
+              online_at: new Date().toISOString(),
+            });
+          }
+        });
+
+      // Store presence channel reference for cleanup
+      presenceRef.current = presenceChannel;
+
       // Initial players fetch
       fetchPlayers();
 
@@ -155,12 +217,90 @@ export const PartyBus = () => {
           }
         });
 
+      // Set up cleanup when player leaves/closes window
+      const handleBeforeUnload = () => {
+        if (nickname && roomId) {
+          // Synchronous cleanup to ensure it runs before window closes
+          const cleanup = new XMLHttpRequest();
+          cleanup.open(
+            'DELETE',
+            `${
+              import.meta.env.VITE_SUPABASE_URL
+            }/rest/v1/party_bus_players?room_id=eq.${roomId}&nickname=eq.${nickname}`,
+            false
+          );
+          cleanup.setRequestHeader(
+            'apikey',
+            import.meta.env.VITE_SUPABASE_ANON_KEY
+          );
+          cleanup.setRequestHeader('Content-Type', 'application/json');
+          cleanup.send();
+
+          // Also leave the presence channel
+          if (presenceRef.current) {
+            presenceRef.current.untrack();
+          }
+        }
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
       return () => {
+        if (presenceTimeout) {
+          window.clearTimeout(presenceTimeout);
+        }
+
+        // Leave presence channel
+        if (presenceRef.current) {
+          presenceRef.current.untrack();
+        }
+
         supabase.removeChannel(playersChannel);
         supabase.removeChannel(gameStatusChannel);
+        if (presenceRef.current) {
+          supabase.removeChannel(presenceRef.current);
+        }
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+
+        // Clean up this player when component unmounts
+        if (nickname) {
+          removePlayer(nickname);
+        }
       };
     }
-  }, [roomId]);
+  }, [roomId, nickname]);
+
+  const removePlayer = async (playerNickname: string) => {
+    if (!roomId) return;
+
+    try {
+      // First check if player still exists to avoid race conditions
+      const { data: existingPlayer } = await supabase
+        .from('party_bus_players')
+        .select('nickname')
+        .eq('room_id', roomId)
+        .eq('nickname', playerNickname)
+        .single();
+
+      if (!existingPlayer) return; // Player already removed
+
+      await supabase
+        .from('party_bus_players')
+        .delete()
+        .eq('room_id', roomId)
+        .eq('nickname', playerNickname);
+
+      // If this was the host, delete the room
+      if (isHost && playerNickname === nickname) {
+        await supabase.from('party_bus_rooms').delete().eq('id', roomId);
+      }
+
+      // Refresh player list for everyone
+      fetchPlayers();
+    } catch (err) {
+      console.error('Error removing player:', err);
+    }
+  };
 
   const fetchPlayers = async () => {
     if (!roomId) return;
