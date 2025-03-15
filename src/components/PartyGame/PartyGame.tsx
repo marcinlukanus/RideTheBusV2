@@ -47,13 +47,34 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
   } = usePartyGameState(roomId, nickname);
 
   useEffect(() => {
-    // Draw initial cards
-    dispatch({ type: 'DRAW_CARDS', amountToDraw: 4, resetScore: false });
+    // Draw initial cards and sync them
+    const drawInitialCards = async () => {
+      // Draw cards first
+      dispatch({ type: 'DRAW_CARDS', amountToDraw: 4, resetScore: false });
+
+      // Wait for state to update
+      setTimeout(async () => {
+        // Then sync to Supabase
+        await supabase
+          .from('party_bus_players')
+          .update({
+            game_state: {
+              nickname,
+              ...gameState,
+              cards: gameState.cards,
+            },
+          })
+          .eq('room_id', roomId)
+          .eq('nickname', nickname);
+      }, 0);
+    };
+
+    drawInitialCards();
 
     // Subscribe to room updates
     const channel = supabase
       .channel(`room:${roomId}`)
-      .on(
+      .on<RealtimePlayerPayload>(
         'postgres_changes',
         {
           event: '*',
@@ -62,7 +83,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
           filter: `room_id=eq.${roomId}`,
         },
         (payload: RealtimePlayerPayload) => {
-          if (payload.new.game_state) {
+          if (payload.new.game_state && payload.new.nickname !== nickname) {
             const state = payload.new.game_state as PlayerState;
             dispatch({
               type: 'UPDATE_PLAYER_STATE',
@@ -79,9 +100,9 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
     };
   }, []);
 
+  // Add effect to sync initial state when cards are drawn
   useEffect(() => {
     if (gameState.cards.length > 0) {
-      // Update player's state in Supabase whenever cards change
       supabase
         .from('party_bus_players')
         .update({
@@ -93,7 +114,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
         .eq('room_id', roomId)
         .eq('nickname', nickname);
     }
-  }, [gameState.cards, gameState.currentRound, gameState.isGameOver]);
+  }, [gameState.cards.length]);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {

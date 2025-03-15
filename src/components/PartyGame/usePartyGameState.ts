@@ -125,68 +125,56 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     playersState: {},
   });
 
-  const updateGameState = (newState: PartyGameState) => {
-    // Update local state first
-    dispatch({
-      type: 'UPDATE_PLAYER_STATE',
-      nickname,
-      state: {
-        nickname,
-        ...newState,
-      },
-    });
+  const syncGameState = async (
+    newState: PartyGameState,
+    action: PartyGameAction
+  ) => {
+    try {
+      // Update local state first
+      dispatch(action);
 
-    // Also update our own game state
-    dispatch({
-      type: 'UPDATE_PLAYER_STATE',
-      nickname,
-      state: {
-        nickname,
-        ...newState,
-      },
-    });
-
-    // Update remote state
-    supabase
-      .from('party_bus_players')
-      .update({
-        game_state: {
-          nickname,
-          ...newState,
-        },
-      })
-      .eq('room_id', roomId)
-      .eq('nickname', nickname);
+      // Then update remote state
+      await supabase
+        .from('party_bus_players')
+        .update({
+          game_state: {
+            nickname,
+            ...newState,
+          },
+        })
+        .eq('room_id', roomId)
+        .eq('nickname', nickname);
+    } catch (error) {
+      console.error('Error syncing game state:', error);
+    }
   };
 
-  const firstRound = (color: RedOrBlack) => {
+  const firstRound = async (color: RedOrBlack) => {
     const card = gameState.cards[0];
     const isRed = card.suit === 'HEARTS' || card.suit === 'DIAMONDS';
     const isCorrect = isRed === (color === 'red');
 
-    if (isCorrect) {
-      dispatch({ type: 'ADVANCE_ROUND', cardToFlip: 0 });
-      updateGameState({
-        ...gameState,
-        currentRound: gameState.currentRound + 1,
-        cards: gameState.cards.map((c, index) =>
-          index === 0 ? { ...c, showCardBack: false } : c
-        ),
-      });
-    } else {
-      dispatch({ type: 'GAME_OVER', cardToFlip: 0 });
-      updateGameState({
-        ...gameState,
-        isGameOver: true,
-        hasWon: false,
-        cards: gameState.cards.map((c, index) =>
-          index === 0 ? { ...c, showCardBack: false } : c
-        ),
-      });
-    }
+    const newState = {
+      ...gameState,
+      currentRound: isCorrect
+        ? gameState.currentRound + 1
+        : gameState.currentRound,
+      isGameOver: !isCorrect,
+      hasWon: false,
+      cards: gameState.cards.map((c, index) =>
+        index === 0 ? { ...c, showCardBack: false } : c
+      ),
+    };
+
+    await syncGameState(
+      newState,
+      isCorrect
+        ? { type: 'ADVANCE_ROUND', cardToFlip: 0 }
+        : { type: 'GAME_OVER', cardToFlip: 0 }
+    );
   };
 
-  const secondRound = (guess: HigherLowerOrSame) => {
+  const secondRound = async (guess: HigherLowerOrSame) => {
     const firstCard = gameState.cards[0];
     const secondCard = gameState.cards[1];
 
@@ -200,29 +188,27 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       (firstCard.values.numericValue === secondCard.values.numericValue &&
         guess === 'same');
 
-    if (isCorrect) {
-      dispatch({ type: 'ADVANCE_ROUND', cardToFlip: 1 });
-      updateGameState({
-        ...gameState,
-        currentRound: gameState.currentRound + 1,
-        cards: gameState.cards.map((c, index) =>
-          index === 1 ? { ...c, showCardBack: false } : c
-        ),
-      });
-    } else {
-      dispatch({ type: 'GAME_OVER', cardToFlip: 1 });
-      updateGameState({
-        ...gameState,
-        isGameOver: true,
-        hasWon: false,
-        cards: gameState.cards.map((c, index) =>
-          index === 1 ? { ...c, showCardBack: false } : c
-        ),
-      });
-    }
+    const newState = {
+      ...gameState,
+      currentRound: isCorrect
+        ? gameState.currentRound + 1
+        : gameState.currentRound,
+      isGameOver: !isCorrect,
+      hasWon: false,
+      cards: gameState.cards.map((c, index) =>
+        index === 1 ? { ...c, showCardBack: false } : c
+      ),
+    };
+
+    await syncGameState(
+      newState,
+      isCorrect
+        ? { type: 'ADVANCE_ROUND', cardToFlip: 1 }
+        : { type: 'GAME_OVER', cardToFlip: 1 }
+    );
   };
 
-  const thirdRound = (guess: InsideOutsideOrSame) => {
+  const thirdRound = async (guess: InsideOutsideOrSame) => {
     const firstCard = gameState.cards[0];
     const secondCard = gameState.cards[1];
     const thirdCard = gameState.cards[2];
@@ -243,51 +229,43 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       (isOutside && guess === 'outside') ||
       (isSame && guess === 'same');
 
-    if (isCorrect) {
-      dispatch({ type: 'ADVANCE_ROUND', cardToFlip: 2 });
-      updateGameState({
-        ...gameState,
-        currentRound: gameState.currentRound + 1,
-        cards: gameState.cards.map((c, index) =>
-          index === 2 ? { ...c, showCardBack: false } : c
-        ),
-      });
-    } else {
-      dispatch({ type: 'GAME_OVER', cardToFlip: 2 });
-      updateGameState({
-        ...gameState,
-        isGameOver: true,
-        hasWon: false,
-        cards: gameState.cards.map((c, index) =>
-          index === 2 ? { ...c, showCardBack: false } : c
-        ),
-      });
-    }
+    const newState = {
+      ...gameState,
+      currentRound: isCorrect
+        ? gameState.currentRound + 1
+        : gameState.currentRound,
+      isGameOver: !isCorrect,
+      hasWon: false,
+      cards: gameState.cards.map((c, index) =>
+        index === 2 ? { ...c, showCardBack: false } : c
+      ),
+    };
+
+    await syncGameState(
+      newState,
+      isCorrect
+        ? { type: 'ADVANCE_ROUND', cardToFlip: 2 }
+        : { type: 'GAME_OVER', cardToFlip: 2 }
+    );
   };
 
-  const finalRound = (suit: string) => {
+  const finalRound = async (suit: string) => {
     const card = gameState.cards[3];
     const isCorrect = card.suit === suit;
 
-    if (isCorrect) {
-      dispatch({ type: 'WIN_GAME' });
-      updateGameState({
-        ...gameState,
-        hasWon: true,
-        isGameOver: true,
-        cards: gameState.cards.map((c) => ({ ...c, showCardBack: false })),
-      });
-    } else {
-      dispatch({ type: 'GAME_OVER', cardToFlip: 3 });
-      updateGameState({
-        ...gameState,
-        isGameOver: true,
-        hasWon: false,
-        cards: gameState.cards.map((c, index) =>
-          index === 3 ? { ...c, showCardBack: false } : c
-        ),
-      });
-    }
+    const newState = {
+      ...gameState,
+      isGameOver: true,
+      hasWon: isCorrect,
+      cards: gameState.cards.map((c, index) =>
+        index === 3 || isCorrect ? { ...c, showCardBack: false } : c
+      ),
+    };
+
+    await syncGameState(
+      newState,
+      isCorrect ? { type: 'WIN_GAME' } : { type: 'GAME_OVER', cardToFlip: 3 }
+    );
   };
 
   return {
