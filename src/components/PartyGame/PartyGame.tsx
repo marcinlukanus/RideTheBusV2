@@ -216,16 +216,20 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
         nickname,
         timesRedrawn: gameState.timesRedrawn,
         isGameOver: gameState.isGameOver,
+        hasWon: gameState.hasWon,
       },
       ...Object.entries(playersState).map(([playerNickname, state]) => ({
         nickname: playerNickname,
         timesRedrawn: state.timesRedrawn,
         isGameOver: state.isGameOver,
+        hasWon: state.hasWon,
       })),
     ];
 
-    // Check if all players have finished
-    const allFinished = allPlayers.every((player) => player.isGameOver);
+    // Check if all players have finished successfully
+    const allFinished = allPlayers.every(
+      (player) => player.isGameOver && player.hasWon
+    );
 
     if (!allFinished) return null;
 
@@ -234,99 +238,119 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       (a, b) => a.timesRedrawn - b.timesRedrawn
     );
     const winner = sortedPlayers[0];
+    const isCurrentPlayerWinner = winner.nickname === nickname;
 
     return (
-      <div className='mt-12 p-8 bg-gray-800 rounded-lg'>
-        <h2 className='text-3xl font-bold mb-6 text-center'>
-          🏆 Final Results 🏆
-        </h2>
-        <div className='space-y-4'>
-          {sortedPlayers.map((player, index) => (
-            <div
-              key={player.nickname}
-              className={`flex justify-between items-center p-4 rounded-lg ${
-                index === 0 ? 'bg-yellow-500/20' : 'bg-gray-700'
-              }`}
-            >
-              <div className='flex items-center gap-3'>
-                <span className='text-xl font-bold'>{index + 1}.</span>
-                <span className='text-xl'>{player.nickname}</span>
-                {index === 0 && <span className='text-2xl'>👑</span>}
+      <>
+        <div className='mt-12 p-8 bg-gray-800 rounded-lg'>
+          <h2 className='text-3xl font-bold mb-6 text-center'>
+            🏆 Final Results 🏆
+          </h2>
+          <div className='space-y-4'>
+            {sortedPlayers.map((player, index) => (
+              <div
+                key={player.nickname}
+                className={`flex justify-between items-center p-4 rounded-lg ${
+                  index === 0 ? 'bg-yellow-500/20' : 'bg-gray-700'
+                }`}
+              >
+                <div className='flex items-center gap-3'>
+                  <span className='text-xl font-bold'>{index + 1}.</span>
+                  <span className='text-xl'>{player.nickname}</span>
+                  {index === 0 && <span className='text-2xl'>👑</span>}
+                </div>
+                <div className='text-xl'>
+                  {player.timesRedrawn}{' '}
+                  {player.timesRedrawn === 1 ? 'redraw' : 'redraws'}
+                </div>
               </div>
-              <div className='text-xl'>
-                {player.timesRedrawn}{' '}
-                {player.timesRedrawn === 1 ? 'redraw' : 'redraws'}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <p className='text-center mt-6 text-xl font-bold'>
+            🎉 {winner.nickname} wins with {winner.timesRedrawn}{' '}
+            {winner.timesRedrawn === 1 ? 'redraw' : 'redraws'}! 🎉
+          </p>
         </div>
-        <p className='text-center mt-6 text-xl font-bold'>
-          🎉 {winner.nickname} wins with {winner.timesRedrawn}{' '}
-          {winner.timesRedrawn === 1 ? 'redraw' : 'redraws'}! 🎉
-        </p>
-      </div>
+        {isCurrentPlayerWinner && <Confetti width={width} height={height} />}
+      </>
     );
   };
 
+  // Check if all players have finished successfully
+  const allPlayers = [
+    { isGameOver: gameState.isGameOver, hasWon: gameState.hasWon },
+    ...Object.values(playersState).map((state) => ({
+      isGameOver: state.isGameOver,
+      hasWon: state.hasWon,
+    })),
+  ];
+  const allFinished = allPlayers.every(
+    (player) => player.isGameOver && player.hasWon
+  );
+
   return (
     <div className='container mx-auto px-4'>
-      <div className='mb-8'>
-        <h2 className='text-2xl font-bold mb-4'>Your Game</h2>
-        <div className='flex flex-col items-center justify-center'>
-          <div className='flex flex-wrap gap-5 justify-center'>
-            {gameState.cards.map((card: GameCard, index: number) => (
-              <Card
-                key={index}
-                rank={card.values.rank}
-                showCardBack={card.showCardBack}
-                suit={card.suit}
-              />
-            ))}
+      {!allFinished ? (
+        <>
+          <div className='mb-8'>
+            <h2 className='text-2xl font-bold mb-4'>Your Game</h2>
+            <div className='flex flex-col items-center justify-center'>
+              <div className='flex flex-wrap gap-5 justify-center'>
+                {gameState.cards.map((card: GameCard, index: number) => (
+                  <Card
+                    key={index}
+                    rank={card.values.rank}
+                    showCardBack={card.showCardBack}
+                    suit={card.suit}
+                  />
+                ))}
+              </div>
+
+              {gameState.isGameOver && !gameState.hasWon && (
+                <div className='flex mt-8'>
+                  <button
+                    className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-white text-black shadow-md active:translate-y-1'
+                    onClick={() => redrawCards(false)}
+                  >
+                    Redraw Cards
+                  </button>
+                </div>
+              )}
+
+              {!gameState.isGameOver && (
+                <div className='flex gap-5 mt-8'>{renderButtons()}</div>
+              )}
+
+              {gameState.isGameOver && (
+                <p className='mt-8 text-lg font-bold'>
+                  {gameState.hasWon
+                    ? 'Finished! High five! ✋'
+                    : 'Take a drink!'}
+                </p>
+              )}
+
+              <p className='mt-4 text-xl font-bold'>
+                Times redrawn: {gameState.timesRedrawn}
+              </p>
+            </div>
           </div>
 
-          {gameState.isGameOver && !gameState.hasWon && (
-            <div className='flex mt-8'>
-              <button
-                className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-white text-black shadow-md active:translate-y-1'
-                onClick={() => redrawCards(false)}
-              >
-                Redraw Cards
-              </button>
+          <div className='mt-8'>
+            <h2 className='text-2xl font-bold mb-4'>Other Players</h2>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+              {Object.entries(playersState)
+                .filter(([playerNickname]) => playerNickname !== nickname)
+                .map(([playerNickname, state]) => (
+                  <div key={playerNickname}>
+                    {renderPlayerGame(state as PlayerState)}
+                  </div>
+                ))}
             </div>
-          )}
-
-          {!gameState.isGameOver && (
-            <div className='flex gap-5 mt-8'>{renderButtons()}</div>
-          )}
-
-          {gameState.isGameOver && (
-            <p className='mt-8 text-lg font-bold'>
-              {gameState.hasWon ? 'Finished! High five! ✋' : 'Take a drink!'}
-            </p>
-          )}
-
-          <p className='mt-4 text-xl font-bold'>
-            Times redrawn: {gameState.timesRedrawn}
-          </p>
-        </div>
-      </div>
-
-      {renderLeaderboard()}
-
-      <div className='mt-8'>
-        <h2 className='text-2xl font-bold mb-4'>Other Players</h2>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          {Object.entries(playersState)
-            .filter(([playerNickname]) => playerNickname !== nickname)
-            .map(([playerNickname, state]) => (
-              <div key={playerNickname}>
-                {renderPlayerGame(state as PlayerState)}
-              </div>
-            ))}
-        </div>
-      </div>
-
-      {gameState.hasWon && <Confetti width={width} height={height} />}
+          </div>
+        </>
+      ) : (
+        renderLeaderboard()
+      )}
     </div>
   );
 };
