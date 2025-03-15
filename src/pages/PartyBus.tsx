@@ -4,6 +4,8 @@ import supabase from '../utils/supabase';
 import { PartyGame } from '../components/PartyGame/PartyGame';
 import { generateRoomId } from '../utils/generateRoomId';
 import { RoomLink } from '../components/RoomLink/RoomLink';
+import { Database } from '../types/database.types';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 type NicknameModalProps = {
   onSubmit: (nickname: string) => Promise<string | undefined>;
@@ -21,6 +23,10 @@ type GameState = {
   isGameOver: boolean;
   timesRedrawn: number;
 };
+
+type RoomPayload = RealtimePostgresChangesPayload<
+  Database['public']['Tables']['party_bus_rooms']['Row']
+>;
 
 const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
   const [nickname, setNickname] = useState('');
@@ -132,9 +138,13 @@ export const PartyBus = () => {
         if (konamiProgress.current.length === konamiCode.current.length) {
           // Broadcast dancing Uzbek man to all players by updating room state
           if (roomId) {
+            const update: Database['public']['Tables']['party_bus_rooms']['Update'] =
+              {
+                show_dancing_uzbek: true,
+              };
             await supabase
               .from('party_bus_rooms')
-              .update({ show_dancing_uzbek: true })
+              .update(update)
               .eq('id', roomId);
           }
           konamiProgress.current = []; // Reset progress
@@ -185,16 +195,14 @@ export const PartyBus = () => {
             table: 'party_bus_rooms',
             filter: `id=eq.${roomId}`,
           },
-          (payload) => {
-            // Check if game has started
-            if (payload.new && payload.new.game_started) {
-              setGameStarted(true);
+          (payload: RoomPayload) => {
+            // Check if game has started and payload has new data
+            if (payload.new && 'game_started' in payload.new) {
+              setGameStarted(payload.new.game_started);
             }
             // Check if dancing Uzbek man should be shown
-            if (payload.new && payload.new.show_dancing_uzbek) {
-              setShowDancingUzbek(true);
-            } else {
-              setShowDancingUzbek(false);
+            if (payload.new && 'show_dancing_uzbek' in payload.new) {
+              setShowDancingUzbek(payload.new.show_dancing_uzbek);
             }
           }
         )
@@ -491,9 +499,14 @@ export const PartyBus = () => {
     if (!roomId) return;
 
     try {
+      const update: Database['public']['Tables']['party_bus_rooms']['Update'] =
+        {
+          game_started: true,
+          show_dancing_uzbek: false,
+        };
       const { error: updateError } = await supabase
         .from('party_bus_rooms')
-        .update({ game_started: true, show_dancing_uzbek: false })
+        .update(update)
         .eq('id', roomId);
 
       if (updateError) throw updateError;
@@ -567,9 +580,13 @@ export const PartyBus = () => {
                     className='mt-4 px-4 py-2 bg-purple-500 rounded-lg text-white'
                     onClick={async () => {
                       if (roomId) {
+                        const update: Database['public']['Tables']['party_bus_rooms']['Update'] =
+                          {
+                            show_dancing_uzbek: false,
+                          };
                         await supabase
                           .from('party_bus_rooms')
-                          .update({ show_dancing_uzbek: false })
+                          .update(update)
                           .eq('id', roomId);
                       }
                     }}
