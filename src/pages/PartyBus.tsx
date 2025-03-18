@@ -524,6 +524,15 @@ export const PartyBus = () => {
 
       {!showNicknamePrompt && !gameStarted && (
         <div className='mt-8 p-6 bg-gray-800 rounded-lg relative'>
+          <div className='mb-6 p-4 bg-yellow-300 bg-opacity-20 rounded-lg border border-yellow-500'>
+            <p className='text-black font-bold mb-1'>🚧 BETA WARNING! 🚧</p>
+            <p className='text-black text-balance'>
+              This feature is still in beta. If it breaks, it's your fault.
+              <br />
+              Have fun out there!
+            </p>
+          </div>
+
           <h2 className='text-2xl font-bold mb-4'>Game Lobby</h2>
 
           {roomCode && (
