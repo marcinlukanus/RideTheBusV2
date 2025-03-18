@@ -286,20 +286,28 @@ export const PartyBus = () => {
       const handleBeforeUnload = () => {
         if (nickname && roomId) {
           // Synchronous cleanup to ensure it runs before window closes
-          const cleanup = new XMLHttpRequest();
-          cleanup.open(
-            'DELETE',
-            `${
-              import.meta.env.VITE_SUPABASE_URL
-            }/rest/v1/party_bus_players?room_id=eq.${roomId}&nickname=eq.${nickname}`,
-            false
-          );
-          cleanup.setRequestHeader(
-            'apikey',
-            import.meta.env.VITE_SUPABASE_ANON_KEY
-          );
-          cleanup.setRequestHeader('Content-Type', 'application/json');
-          cleanup.send();
+          const cleanup = async () => {
+            try {
+              await fetch(
+                `${
+                  import.meta.env.VITE_SUPABASE_URL
+                }/rest/v1/party_bus_players?room_id=eq.${roomId}&nickname=eq.${nickname}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    'Content-Type': 'application/json',
+                  },
+                  // Make it synchronous so it completes before window closes
+                  keepalive: true,
+                }
+              );
+            } catch (error) {
+              console.error('Error cleaning up player:', error);
+            }
+          };
+
+          cleanup();
 
           // Also leave the presence channel
           if (presenceRef.current) {
