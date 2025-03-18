@@ -4,7 +4,7 @@ import supabase from '../utils/supabase';
 import { PartyGame } from '../components/PartyGame/PartyGame';
 import { generateRoomId } from '../utils/generateRoomId';
 import { RoomLink } from '../components/RoomLink/RoomLink';
-import { Database } from '../types/database.types';
+import { Database } from '../types/database.types.ts';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 type NicknameModalProps = {
