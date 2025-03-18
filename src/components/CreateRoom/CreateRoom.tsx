@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import supabase from '../utils/supabase';
-import { generateRoomId } from '../utils/generateRoomId';
-import { RoomLink } from '../components/RoomLink/RoomLink';
+import supabase from '../../utils/supabase';
+import { generateRoomId } from '../../utils/generateRoomId';
+import { RoomLink } from '../RoomLink/RoomLink';
 
 type GameState = {
   cards: never[];

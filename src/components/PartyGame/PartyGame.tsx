@@ -12,7 +12,7 @@ import {
   Card as GameCard,
 } from '../Game/useGameState';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { Database } from '../../../database.types';
+import type { Database } from '../../types/database.types';
 
 type PartyGameProps = {
   roomId: string;
