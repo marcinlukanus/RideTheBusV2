@@ -67,7 +67,7 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
               setNickname(e.target.value);
               setError(''); // Clear error when user types
             }}
-            onKeyPress={(e) => {
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && nickname && !isSubmitting) {
                 handleSubmit();
               }

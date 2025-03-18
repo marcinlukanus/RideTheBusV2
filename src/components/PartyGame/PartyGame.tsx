@@ -86,7 +86,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
     const channel = supabase
       .channel(`room:${roomId}`)
       .on<RealtimePlayerPayload>(
-        'postgres_changes' as any,
+        'postgres_changes',
         {
           event: '*',
           schema: 'public',
