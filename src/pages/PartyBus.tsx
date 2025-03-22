@@ -53,15 +53,15 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
   };
 
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-      <div className='bg-gray-800 p-6 rounded-lg w-96'>
-        <h3 className='text-xl font-bold mb-4'>
+    <div className="bg-opacity-50 fixed inset-0 flex items-center justify-center bg-black">
+      <div className="w-96 rounded-lg bg-gray-800 p-6">
+        <h3 className="mb-4 text-xl font-bold">
           {isJoining ? 'Enter nickname to join' : 'Enter your nickname'}
         </h3>
-        <div className='flex flex-col gap-4 space-y-4'>
+        <div className="flex flex-col gap-4 space-y-4">
           <input
-            type='text'
-            className='w-full px-4 py-2 bg-gray-700 rounded-lg text-white'
+            type="text"
+            className="w-full rounded-lg bg-gray-700 px-4 py-2 text-white"
             value={nickname}
             onChange={(e) => {
               setNickname(e.target.value);
@@ -72,22 +72,18 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
                 handleSubmit();
               }
             }}
-            placeholder='Your nickname'
+            placeholder="Your nickname"
             minLength={2}
             maxLength={20}
             disabled={isSubmitting}
           />
-          {error && <p className='text-red-500 text-sm'>{error}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
           <button
-            className='w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting
-              ? 'Please wait...'
-              : isJoining
-              ? 'Join Game'
-              : 'Create Room'}
+            {isSubmitting ? 'Please wait...' : isJoining ? 'Join Game' : 'Create Room'}
           </button>
         </div>
       </div>
@@ -128,8 +124,7 @@ export const PartyBus = () => {
 
     const handleKeyDown = async (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      const expectedKey =
-        konamiCode.current[konamiProgress.current.length].toLowerCase();
+      const expectedKey = konamiCode.current[konamiProgress.current.length].toLowerCase();
 
       if (key === expectedKey) {
         konamiProgress.current.push(key);
@@ -138,14 +133,10 @@ export const PartyBus = () => {
         if (konamiProgress.current.length === konamiCode.current.length) {
           // Broadcast dancing Uzbek man to all players by updating room state
           if (roomId) {
-            const update: Database['public']['Tables']['party_bus_rooms']['Update'] =
-              {
-                show_dancing_uzbek: true,
-              };
-            await supabase
-              .from('party_bus_rooms')
-              .update(update)
-              .eq('id', roomId);
+            const update: Database['public']['Tables']['party_bus_rooms']['Update'] = {
+              show_dancing_uzbek: true,
+            };
+            await supabase.from('party_bus_rooms').update(update).eq('id', roomId);
           }
           konamiProgress.current = []; // Reset progress
         }
@@ -180,7 +171,7 @@ export const PartyBus = () => {
           () => {
             // Refresh players list
             fetchPlayers();
-          }
+          },
         )
         .subscribe();
 
@@ -204,7 +195,7 @@ export const PartyBus = () => {
             if (payload.new && 'show_dancing_uzbek' in payload.new) {
               setShowDancingUzbek(payload.new.show_dancing_uzbek);
             }
-          }
+          },
         )
         .subscribe();
 
@@ -292,7 +283,7 @@ export const PartyBus = () => {
             `${
               import.meta.env.VITE_SUPABASE_URL
             }/rest/v1/party_bus_players?room_id=eq.${roomId}&nickname=eq.${nickname}`,
-            false
+            false,
           );
           cleanup.setRequestHeader('Content-Type', 'application/json');
           cleanup.send();
@@ -371,9 +362,7 @@ export const PartyBus = () => {
     }
   };
 
-  const handleNicknameSubmit = async (
-    name: string
-  ): Promise<string | undefined> => {
+  const handleNicknameSubmit = async (name: string): Promise<string | undefined> => {
     setError('');
 
     if (roomCode) {
@@ -405,20 +394,18 @@ export const PartyBus = () => {
         }
 
         // Add player to room
-        const { error: joinError } = await supabase
-          .from('party_bus_players')
-          .insert({
-            room_id: room.id,
+        const { error: joinError } = await supabase.from('party_bus_players').insert({
+          room_id: room.id,
+          nickname: name,
+          game_state: {
+            cards: [],
+            currentRound: 1,
+            hasWon: false,
+            isGameOver: false,
+            timesRedrawn: 0,
             nickname: name,
-            game_state: {
-              cards: [],
-              currentRound: 1,
-              hasWon: false,
-              isGameOver: false,
-              timesRedrawn: 0,
-              nickname: name,
-            } as GameState,
-          });
+          } as GameState,
+        });
 
         if (joinError) {
           return 'Failed to join room. Please try again.';
@@ -454,20 +441,18 @@ export const PartyBus = () => {
         }
 
         // Add the host as first player
-        const { error: playerError } = await supabase
-          .from('party_bus_players')
-          .insert({
-            room_id: room.id,
+        const { error: playerError } = await supabase.from('party_bus_players').insert({
+          room_id: room.id,
+          nickname: name,
+          game_state: {
+            cards: [],
+            currentRound: 1,
+            hasWon: false,
+            isGameOver: false,
+            timesRedrawn: 0,
             nickname: name,
-            game_state: {
-              cards: [],
-              currentRound: 1,
-              hasWon: false,
-              isGameOver: false,
-              timesRedrawn: 0,
-              nickname: name,
-            } as GameState,
-          });
+          } as GameState,
+        });
 
         if (playerError) {
           return 'Failed to create room. Please try again.';
@@ -490,11 +475,10 @@ export const PartyBus = () => {
     if (!roomId) return;
 
     try {
-      const update: Database['public']['Tables']['party_bus_rooms']['Update'] =
-        {
-          game_started: true,
-          show_dancing_uzbek: false,
-        };
+      const update: Database['public']['Tables']['party_bus_rooms']['Update'] = {
+        game_started: true,
+        show_dancing_uzbek: false,
+      };
       const { error: updateError } = await supabase
         .from('party_bus_rooms')
         .update(update)
@@ -510,11 +494,9 @@ export const PartyBus = () => {
   };
 
   return (
-    <div className='container mx-auto px-4'>
-      <h1 className='text-4xl md:text-5xl font-bold leading-tight mb-2'>
-        Ride The Party Bus
-      </h1>
-      <h4 className='text-xl md:text-2xl italic mt-0 mb-6'>
+    <div className="container mx-auto px-4">
+      <h1 className="mb-2 text-4xl leading-tight font-bold md:text-5xl">Ride The Party Bus</h1>
+      <h4 className="mt-0 mb-6 text-xl italic md:text-2xl">
         The best single-player drinking game, now with friends!
       </h4>
 
@@ -523,36 +505,34 @@ export const PartyBus = () => {
       )}
 
       {!showNicknamePrompt && !gameStarted && (
-        <div className='mt-8 p-6 bg-gray-800 rounded-lg relative'>
-          <div className='mb-6 p-4 bg-yellow-300 bg-opacity-20 rounded-lg border border-yellow-500'>
-            <p className='text-black font-bold mb-1'>🚧 BETA WARNING! 🚧</p>
-            <p className='text-black text-balance'>
+        <div className="relative mt-8 rounded-lg bg-gray-800 p-6">
+          <div className="bg-opacity-20 mb-6 rounded-lg border border-yellow-500 bg-yellow-300 p-4">
+            <p className="mb-1 font-bold text-black">🚧 BETA WARNING! 🚧</p>
+            <p className="text-balance text-black">
               This feature is still in beta. If it breaks, it&apos;s your fault.
               <br />
               Have fun out there!
             </p>
           </div>
 
-          <h2 className='text-2xl font-bold mb-4'>Game Lobby</h2>
+          <h2 className="mb-4 text-2xl font-bold">Game Lobby</h2>
 
           {roomCode && (
-            <div className='mb-6'>
+            <div className="mb-6">
               <RoomLink roomId={roomCode} />
             </div>
           )}
 
-          <div className='mb-6'>
-            <h3 className='text-xl font-bold mb-2'>Players</h3>
-            <div className='grid grid-cols-2 gap-4'>
+          <div className="mb-6">
+            <h3 className="mb-2 text-xl font-bold">Players</h3>
+            <div className="grid grid-cols-2 gap-4">
               {players.map((player) => (
                 <div
                   key={player.nickname}
-                  className='p-3 bg-gray-700 rounded-lg flex items-center justify-between'
+                  className="flex items-center justify-between rounded-lg bg-gray-700 p-3"
                 >
                   <span>{player.nickname}</span>
-                  {player.nickname === nickname && (
-                    <span className='text-green-400'>(You)</span>
-                  )}
+                  {player.nickname === nickname && <span className="text-green-400">(You)</span>}
                 </div>
               ))}
             </div>
@@ -560,7 +540,7 @@ export const PartyBus = () => {
 
           {isHost && (
             <button
-              className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-purple-500 text-white shadow-md'
+              className="cursor-pointer rounded-lg bg-purple-500 px-4 py-2 text-lg font-bold text-white shadow-md"
               onClick={startGame}
             >
               Start Game
@@ -569,25 +549,21 @@ export const PartyBus = () => {
 
           {/* Dancing Uzbek Man Easter Egg */}
           {showDancingUzbek && (
-            <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-10'>
-              <div className='text-center'>
-                <div className='text-6xl animate-bounce mb-4'>🕺</div>
-                <div className='text-2xl font-bold text-yellow-400 animate-pulse'>
+            <div className="bg-opacity-80 absolute inset-0 z-10 flex items-center justify-center bg-black">
+              <div className="text-center">
+                <div className="mb-4 animate-bounce text-6xl">🕺</div>
+                <div className="animate-pulse text-2xl font-bold text-yellow-400">
                   VERY NICE! GREAT SUCCESS!
                 </div>
                 {isHost && (
                   <button
-                    className='mt-4 px-4 py-2 bg-purple-500 rounded-lg text-white'
+                    className="mt-4 rounded-lg bg-purple-500 px-4 py-2 text-white"
                     onClick={async () => {
                       if (roomId) {
-                        const update: Database['public']['Tables']['party_bus_rooms']['Update'] =
-                          {
-                            show_dancing_uzbek: false,
-                          };
-                        await supabase
-                          .from('party_bus_rooms')
-                          .update(update)
-                          .eq('id', roomId);
+                        const update: Database['public']['Tables']['party_bus_rooms']['Update'] = {
+                          show_dancing_uzbek: false,
+                        };
+                        await supabase.from('party_bus_rooms').update(update).eq('id', roomId);
                       }
                     }}
                   >
@@ -605,9 +581,7 @@ export const PartyBus = () => {
       )}
 
       {error && (
-        <div className='mt-4 p-4 bg-red-500 bg-opacity-20 rounded-lg text-red-100'>
-          {error}
-        </div>
+        <div className="bg-opacity-20 mt-4 rounded-lg bg-red-500 p-4 text-red-100">{error}</div>
       )}
     </div>
   );

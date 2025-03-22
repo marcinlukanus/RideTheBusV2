@@ -4,9 +4,9 @@ import { Header } from '../components/Header/Header';
 
 export const Layout = () => {
   return (
-    <div className='flex flex-col min-h-screen '>
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <main className='max-w-6xl mx-auto p-8 pt-16 text-center flex-grow'>
+      <main className="mx-auto max-w-6xl flex-grow p-8 pt-16 text-center">
         <Outlet />
       </main>
       <Footer />

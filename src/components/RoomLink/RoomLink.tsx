@@ -20,23 +20,23 @@ export const RoomLink = ({ roomId }: RoomLinkProps) => {
   };
 
   return (
-    <div className='flex flex-col items-center gap-4 p-4 bg-gray-800 rounded-lg'>
-      <h3 className='text-xl font-bold'>Room Code: {roomId}</h3>
-      <div className='flex items-center gap-2'>
+    <div className="flex flex-col items-center gap-4 rounded-lg bg-gray-800 p-4">
+      <h3 className="text-xl font-bold">Room Code: {roomId}</h3>
+      <div className="flex items-center gap-2">
         <input
-          type='text'
+          type="text"
           value={roomUrl}
           readOnly
-          className='px-4 py-2 bg-gray-700 rounded-lg text-white w-64 sm:w-96'
+          className="w-64 rounded-lg bg-gray-700 px-4 py-2 text-white sm:w-96"
         />
         <button
           onClick={copyToClipboard}
-          className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+          className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
         >
           {copied ? '✓ Copied!' : 'Copy Link'}
         </button>
       </div>
-      <p className='text-sm text-gray-400'>
+      <p className="text-sm text-gray-400">
         Share this link with your friends to invite them to the game!
       </p>
     </div>

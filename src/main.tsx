@@ -18,12 +18,12 @@ createRoot(document.getElementById('root')!).render(
         {/* The Layout route will wrap all the nested routes */}
         <Route element={<Layout />}>
           <Route index element={<App />} />
-          <Route path='/party-bus' element={<PartyBus />} />
-          <Route path='/party-bus/:roomCode' element={<PartyBus />} />
-          <Route path='/stats' element={<Stats />} />
-          <Route path='/:username/profile' element={<Profile />} />
+          <Route path="/party-bus" element={<PartyBus />} />
+          <Route path="/party-bus/:roomCode" element={<PartyBus />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/:username/profile" element={<Profile />} />
           <Route
-            path='/login'
+            path="/login"
             element={
               <ProtectedRoute>
                 <Login />
@@ -31,7 +31,7 @@ createRoot(document.getElementById('root')!).render(
             }
           />
           <Route
-            path='/sign-up'
+            path="/sign-up"
             element={
               <ProtectedRoute>
                 <SignUp />
@@ -39,9 +39,9 @@ createRoot(document.getElementById('root')!).render(
             }
           />
           {/* Catch-all route that redirects to index */}
-          <Route path='*' element={<Navigate to='/' replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </AuthProvider>
-  </BrowserRouter>
+  </BrowserRouter>,
 );

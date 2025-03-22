@@ -28,7 +28,7 @@ export const Profile = () => {
       try {
         if (!username) {
           throw new Error(
-            "What is this, a profile page without a username? That's like a horse without a... actually, never mind."
+            "What is this, a profile page without a username? That's like a horse without a... actually, never mind.",
           );
         }
 
@@ -38,10 +38,8 @@ export const Profile = () => {
         const userScores = await getUserScores(userData.id);
         setScores(
           userScores.sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime()
-          )
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          ),
         );
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -86,8 +84,8 @@ export const Profile = () => {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center min-h-screen'>
-        <div className='text-xl'>Loading...</div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-xl">Loading...</div>
       </div>
     );
   }
@@ -99,8 +97,8 @@ export const Profile = () => {
 
   if (!profile) {
     return (
-      <div className='flex justify-center items-center min-h-screen'>
-        <div className='text-xl'>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-xl">
           User not found. Back in the 90s, this would&apos;ve been a 404 page...
         </div>
       </div>
@@ -108,62 +106,57 @@ export const Profile = () => {
   }
 
   return (
-    <div className='container mx-auto px-4 py-8'>
-      <div className='flex flex-col items-center mb-8'>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8 flex flex-col items-center">
         <div
-          className={`relative w-32 h-32 mb-4 ${
-            isOwnProfile ? 'cursor-pointer group' : ''
-          }`}
+          className={`relative mb-4 h-32 w-32 ${isOwnProfile ? 'group cursor-pointer' : ''}`}
           onClick={handleAvatarClick}
         >
           <img
             src={profile.avatar_url || '/images/default-avatar.png'}
             alt={`${profile.username}'s avatar`}
-            className='w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700'
+            className="h-32 w-32 rounded-full border-4 border-gray-200 object-cover dark:border-gray-700"
           />
           {isOwnProfile && (
             <>
-              <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity'>
-                <span className='text-white text-sm'>
+              <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="text-sm text-white">
                   {updating ? 'Updating...' : 'Change Avatar'}
                 </span>
               </div>
               <input
-                type='file'
+                type="file"
                 ref={fileInputRef}
-                className='hidden'
-                accept='image/*'
+                className="hidden"
+                accept="image/*"
                 onChange={handleAvatarChange}
                 disabled={updating}
               />
             </>
           )}
         </div>
-        <h1 className='text-3xl font-bold'>{profile.username}</h1>
+        <h1 className="text-3xl font-bold">{profile.username}</h1>
       </div>
 
-      <table className='max-w-2xl w-full mx-auto'>
+      <table className="mx-auto w-full max-w-2xl">
         <thead>
           <tr>
-            <th className='py-2 px-4 border-b'>Ticket Date</th>
-            <th className='py-2 px-4 border-b'>Stops</th>
+            <th className="border-b px-4 py-2">Ticket Date</th>
+            <th className="border-b px-4 py-2">Stops</th>
           </tr>
         </thead>
         <tbody>
           {scores.map((score) => (
             <tr key={score.id}>
-              <td className='py-2 px-4 border-b'>
+              <td className="border-b px-4 py-2">
                 {new Date(score.created_at).toLocaleDateString()}
               </td>
-              <td className='py-2 px-4 border-b'>{score.score}</td>
+              <td className="border-b px-4 py-2">{score.score}</td>
             </tr>
           ))}
           {scores.length === 0 && (
             <tr>
-              <td
-                colSpan={2}
-                className='px-6 py-4 text-center text-sm text-gray-300'
-              >
+              <td colSpan={2} className="px-6 py-4 text-center text-sm text-gray-300">
                 No rides taken yet. Lame!
               </td>
             </tr>

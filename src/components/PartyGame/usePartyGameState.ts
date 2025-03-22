@@ -41,10 +41,7 @@ type ReducerState = {
   playersState: PlayersState;
 };
 
-const reducer = (
-  state: ReducerState,
-  action: PartyGameAction
-): ReducerState => {
+const reducer = (state: ReducerState, action: PartyGameAction): ReducerState => {
   switch (action.type) {
     case 'DRAW_CARDS':
       return {
@@ -55,9 +52,7 @@ const reducer = (
           hasWon: false,
           isGameOver: false,
           currentRound: 1,
-          timesRedrawn: action.resetScore
-            ? 0
-            : state.gameState.timesRedrawn + 1,
+          timesRedrawn: action.resetScore ? 0 : state.gameState.timesRedrawn + 1,
         },
       };
     case 'ADVANCE_ROUND':
@@ -67,9 +62,7 @@ const reducer = (
           ...state.gameState,
           currentRound: state.gameState.currentRound + 1,
           cards: state.gameState.cards.map((card, index) =>
-            index === action.cardToFlip
-              ? { ...card, showCardBack: false }
-              : card
+            index === action.cardToFlip ? { ...card, showCardBack: false } : card,
           ),
         },
       };
@@ -81,9 +74,7 @@ const reducer = (
           isGameOver: true,
           hasWon: false,
           cards: state.gameState.cards.map((card, index) =>
-            index === action.cardToFlip
-              ? { ...card, showCardBack: false }
-              : card
+            index === action.cardToFlip ? { ...card, showCardBack: false } : card,
           ),
         },
       };
@@ -125,10 +116,7 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     playersState: {},
   });
 
-  const syncGameState = async (
-    newState: PartyGameState,
-    action: PartyGameAction
-  ) => {
+  const syncGameState = async (newState: PartyGameState, action: PartyGameAction) => {
     try {
       // Update local state first
       dispatch(action);
@@ -149,10 +137,7 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     }
   };
 
-  const redrawCards = async (
-    hasWon: boolean,
-    isInitialDraw: boolean = false
-  ) => {
+  const redrawCards = async (hasWon: boolean, isInitialDraw: boolean = false) => {
     // Draw new cards first
     const newCards = drawCards(4);
 
@@ -200,21 +185,15 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
 
     const newState = {
       ...gameState,
-      currentRound: isCorrect
-        ? gameState.currentRound + 1
-        : gameState.currentRound,
+      currentRound: isCorrect ? gameState.currentRound + 1 : gameState.currentRound,
       isGameOver: !isCorrect,
       hasWon: false,
-      cards: gameState.cards.map((c, index) =>
-        index === 0 ? { ...c, showCardBack: false } : c
-      ),
+      cards: gameState.cards.map((c, index) => (index === 0 ? { ...c, showCardBack: false } : c)),
     };
 
     await syncGameState(
       newState,
-      isCorrect
-        ? { type: 'ADVANCE_ROUND', cardToFlip: 0 }
-        : { type: 'GAME_OVER', cardToFlip: 0 }
+      isCorrect ? { type: 'ADVANCE_ROUND', cardToFlip: 0 } : { type: 'GAME_OVER', cardToFlip: 0 },
     );
   };
 
@@ -222,33 +201,24 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     const firstCard = gameState.cards[0];
     const secondCard = gameState.cards[1];
 
-    const isHigher =
-      secondCard.values.numericValue > firstCard.values.numericValue;
-    const isLower =
-      secondCard.values.numericValue < firstCard.values.numericValue;
+    const isHigher = secondCard.values.numericValue > firstCard.values.numericValue;
+    const isLower = secondCard.values.numericValue < firstCard.values.numericValue;
     const isCorrect =
       (isHigher && guess === 'higher') ||
       (isLower && guess === 'lower') ||
-      (firstCard.values.numericValue === secondCard.values.numericValue &&
-        guess === 'same');
+      (firstCard.values.numericValue === secondCard.values.numericValue && guess === 'same');
 
     const newState = {
       ...gameState,
-      currentRound: isCorrect
-        ? gameState.currentRound + 1
-        : gameState.currentRound,
+      currentRound: isCorrect ? gameState.currentRound + 1 : gameState.currentRound,
       isGameOver: !isCorrect,
       hasWon: false,
-      cards: gameState.cards.map((c, index) =>
-        index === 1 ? { ...c, showCardBack: false } : c
-      ),
+      cards: gameState.cards.map((c, index) => (index === 1 ? { ...c, showCardBack: false } : c)),
     };
 
     await syncGameState(
       newState,
-      isCorrect
-        ? { type: 'ADVANCE_ROUND', cardToFlip: 1 }
-        : { type: 'GAME_OVER', cardToFlip: 1 }
+      isCorrect ? { type: 'ADVANCE_ROUND', cardToFlip: 1 } : { type: 'GAME_OVER', cardToFlip: 1 },
     );
   };
 
@@ -275,21 +245,15 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
 
     const newState = {
       ...gameState,
-      currentRound: isCorrect
-        ? gameState.currentRound + 1
-        : gameState.currentRound,
+      currentRound: isCorrect ? gameState.currentRound + 1 : gameState.currentRound,
       isGameOver: !isCorrect,
       hasWon: false,
-      cards: gameState.cards.map((c, index) =>
-        index === 2 ? { ...c, showCardBack: false } : c
-      ),
+      cards: gameState.cards.map((c, index) => (index === 2 ? { ...c, showCardBack: false } : c)),
     };
 
     await syncGameState(
       newState,
-      isCorrect
-        ? { type: 'ADVANCE_ROUND', cardToFlip: 2 }
-        : { type: 'GAME_OVER', cardToFlip: 2 }
+      isCorrect ? { type: 'ADVANCE_ROUND', cardToFlip: 2 } : { type: 'GAME_OVER', cardToFlip: 2 },
     );
   };
 
@@ -302,13 +266,13 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       isGameOver: true,
       hasWon: isCorrect,
       cards: gameState.cards.map((c, index) =>
-        index === 3 || isCorrect ? { ...c, showCardBack: false } : c
+        index === 3 || isCorrect ? { ...c, showCardBack: false } : c,
       ),
     };
 
     await syncGameState(
       newState,
-      isCorrect ? { type: 'WIN_GAME' } : { type: 'GAME_OVER', cardToFlip: 3 }
+      isCorrect ? { type: 'WIN_GAME' } : { type: 'GAME_OVER', cardToFlip: 3 },
     );
   };
 

@@ -12,11 +12,9 @@ export const uploadAvatar = async (file: File, userId: string) => {
     const filePath = `${userId}/avatar.${fileExt}`;
 
     // Upload the file to Supabase storage
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file, {
-        upsert: true,
-      });
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, {
+      upsert: true,
+    });
 
     if (uploadError) throw uploadError;
 

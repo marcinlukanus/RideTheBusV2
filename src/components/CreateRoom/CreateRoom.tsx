@@ -41,20 +41,18 @@ export const CreateRoom = () => {
       if (roomError) throw roomError;
 
       // Add the host as first player
-      const { error: playerError } = await supabase
-        .from('party_bus_players')
-        .insert({
-          room_id: room.id, // Use the UUID here
-          nickname: nickname,
-          game_state: {
-            cards: [],
-            currentRound: 1,
-            hasWon: false,
-            isGameOver: false,
-            timesRedrawn: 0,
-            nickname: nickname, // Include nickname in game state
-          } as GameState,
-        });
+      const { error: playerError } = await supabase.from('party_bus_players').insert({
+        room_id: room.id, // Use the UUID here
+        nickname: nickname,
+        game_state: {
+          cards: [],
+          currentRound: 1,
+          hasWon: false,
+          isGameOver: false,
+          timesRedrawn: 0,
+          nickname: nickname, // Include nickname in game state
+        } as GameState,
+      });
 
       if (playerError) throw playerError;
 
@@ -73,47 +71,45 @@ export const CreateRoom = () => {
   };
 
   return (
-    <div className='container mx-auto px-4 py-8'>
-      <div className='max-w-md mx-auto'>
-        <h1 className='text-3xl font-bold mb-8 text-center'>
-          Create a New Game
-        </h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-md">
+        <h1 className="mb-8 text-center text-3xl font-bold">Create a New Game</h1>
 
         {!roomCode ? (
-          <form onSubmit={createRoom} className='space-y-6'>
+          <form onSubmit={createRoom} className="space-y-6">
             <div>
-              <label htmlFor='nickname' className='block text-lg mb-2'>
+              <label htmlFor="nickname" className="mb-2 block text-lg">
                 Your Nickname
               </label>
               <input
-                id='nickname'
-                type='text'
+                id="nickname"
+                type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                className='w-full px-4 py-2 bg-gray-700 rounded-lg text-white'
+                className="w-full rounded-lg bg-gray-700 px-4 py-2 text-white"
                 required
                 minLength={2}
                 maxLength={20}
               />
             </div>
 
-            {error && <p className='text-red-500 text-center'>{error}</p>}
+            {error && <p className="text-center text-red-500">{error}</p>}
 
             <button
-              type='submit'
+              type="submit"
               disabled={isCreating}
-              className='w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50'
+              className="w-full rounded-lg bg-blue-600 py-3 text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
             >
               {isCreating ? 'Creating...' : 'Create Room'}
             </button>
           </form>
         ) : (
-          <div className='space-y-6'>
+          <div className="space-y-6">
             <RoomLink roomId={roomCode} />
 
             <button
               onClick={startGame}
-              className='w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors'
+              className="w-full rounded-lg bg-green-600 py-3 text-white transition-colors hover:bg-green-700"
             >
               Start Game
             </button>
