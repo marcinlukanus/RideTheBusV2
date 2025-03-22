@@ -1,10 +1,10 @@
 import supabase from '../utils/supabase';
 
-export const getUserByDisplayName = async (displayName: string) => {
+export const getProfileByUsername = async (username: string) => {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('username', displayName)
+    .eq('username', username)
     .single();
 
   if (error) {

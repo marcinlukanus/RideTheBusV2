@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getUserByDisplayName } from '../api/getUserByDisplayName';
+import { getProfileByUsername } from '../api/getProfileByUsername';
 import { getUserScores } from '../api/getUserScores';
 import { Database } from '../types/database.types';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,10 +32,10 @@ export const Profile = () => {
           );
         }
 
-        const userData = await getUserByDisplayName(username);
-        setProfile(userData);
+        const profileData = await getProfileByUsername(username);
+        setProfile(profileData);
 
-        const userScores = await getUserScores(userData.id);
+        const userScores = await getUserScores(profileData.id);
         setScores(
           userScores.sort(
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
