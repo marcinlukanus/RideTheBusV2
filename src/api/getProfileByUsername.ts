@@ -4,7 +4,7 @@ export const getProfileByUsername = async (username: string) => {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('username', username)
+    .ilike('username', username)
     .single();
 
   if (error) {
