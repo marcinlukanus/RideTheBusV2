@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProfile } from '../../hooks/useProfile';
 
 export const Header = () => {
   const { user, signOut } = useAuth();
+  const { profile } = useProfile(user?.id);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -14,7 +16,7 @@ export const Header = () => {
             <Link to='/' className='flex items-center'>
               <picture>
                 <img
-                  src='/images/144.png'
+                  src='/images/logo/144.png'
                   alt='Ride The Bus Logo'
                   className='w-auto h-16'
                 />
@@ -32,8 +34,13 @@ export const Header = () => {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className='flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none'
                 >
+                  <img
+                    src={profile?.avatar_url || '/images/default-avatar.png'}
+                    alt='Profile avatar'
+                    className='w-12 h-12 rounded-full object-cover'
+                  />
                   <span className='text-md font-medium xs:inline'>
-                    {user.user_metadata?.display_name}
+                    {profile?.username || user.user_metadata?.display_name}
                   </span>
                   <svg
                     className='h-5 w-5'
@@ -54,7 +61,9 @@ export const Header = () => {
                   <div className='absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5'>
                     <div className='py-1'>
                       <Link
-                        to={`/${user.user_metadata.display_name}/profile`}
+                        to={`/${
+                          profile?.username || user.user_metadata.display_name
+                        }/profile`}
                         className='block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         onClick={() => setIsMenuOpen(false)}
                       >

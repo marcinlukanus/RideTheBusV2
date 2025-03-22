@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import supabase from '../utils/supabase';
+import supabase, { uploadAvatar } from '../utils/supabase';
+import type { Database } from '../types/database.types';
+
+type Profile = Database['public']['Tables']['profiles']['Insert'];
 
 export const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -8,7 +11,28 @@ export const SignUp = () => {
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState(
+    '/images/default-avatar.png'
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,30 +40,35 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      // Sign up the user
-      const {
-        data: { user },
-        error: signUpError,
-      } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            display_name: username,
-          },
-        },
-      });
-
-      if (signUpError || !user) throw signUpError;
-
-      // Auto-login after successful signup
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      // Sign up the user - this will also automatically sign them in
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (signInError) throw signInError;
+      if (signUpError || !data.user) throw signUpError;
 
+      // Upload avatar if one was selected
+      let avatarUrl = '/images/default-avatar.png';
+      if (avatarFile) {
+        const { publicUrl } = await uploadAvatar(avatarFile, data.user.id);
+        avatarUrl = publicUrl;
+      }
+
+      // Create a new profile in the database
+      const profile: Profile = {
+        id: data.user.id,
+        username,
+        avatar_url: avatarUrl,
+      };
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([profile]);
+
+      if (profileError) throw profileError;
+
+      // User is already logged in thanks to Supabase's auto-login after signup
       navigate('/');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
@@ -51,7 +80,27 @@ export const SignUp = () => {
   return (
     <div className='min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-20'>
       <div className='max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl'>
-        <div>
+        <div className='flex flex-col items-center'>
+          <div
+            className='relative w-32 h-32 mb-4 cursor-pointer group'
+            onClick={handleAvatarClick}
+          >
+            <img
+              src={avatarPreview}
+              alt='Profile avatar'
+              className='w-32 h-32 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700'
+            />
+            <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity'>
+              <span className='text-white text-sm'>Change Avatar</span>
+            </div>
+            <input
+              type='file'
+              ref={fileInputRef}
+              className='hidden'
+              accept='image/*'
+              onChange={handleAvatarChange}
+            />
+          </div>
           <h2 className='text-3xl font-extrabold text-gray-900 dark:text-white'>
             Create your account
           </h2>
