@@ -527,7 +527,7 @@ export const PartyBus = () => {
           <div className='mb-6 p-4 bg-yellow-300 bg-opacity-20 rounded-lg border border-yellow-500'>
             <p className='text-black font-bold mb-1'>🚧 BETA WARNING! 🚧</p>
             <p className='text-black text-balance'>
-              This feature is still in beta. If it breaks, it's your fault.
+              This feature is still in beta. If it breaks, it&apos;s your fault.
               <br />
               Have fun out there!
             </p>
