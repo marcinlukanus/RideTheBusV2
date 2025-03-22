@@ -136,6 +136,10 @@ export const Profile = () => {
           )}
         </div>
         <h1 className="text-3xl font-bold">{profile.username}</h1>
+        {/* Display this h3 only if the profile.created_at is before March 24, 2025 local TZ */}
+        {new Date(profile.created_at) < new Date('2025-03-24T00:00:00') && (
+          <h3 className="mt-2 text-xl italic">Founding Bus Rider 🍻</h3>
+        )}
       </div>
 
       <table className="mx-auto w-full max-w-2xl">
