@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import supabase, { uploadAvatar } from '../utils/supabase';
+import supabase from '../utils/supabase';
 import type { Database } from '../types/database.types';
+import { uploadAvatar } from '../api/uploadAvatar';
 
 type Profile = Database['public']['Tables']['profiles']['Insert'];
 

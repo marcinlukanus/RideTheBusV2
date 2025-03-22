@@ -4,8 +4,8 @@ import { getProfileByUsername } from '../api/getProfileByUsername';
 import { getUserScores } from '../api/getUserScores';
 import { Database } from '../types/database.types';
 import { useAuth } from '../contexts/AuthContext';
-import { uploadAvatar } from '../utils/supabase';
 import supabase from '../utils/supabase';
+import { uploadAvatar } from '../api/uploadAvatar';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Score = Database['public']['Tables']['scores']['Row'];
