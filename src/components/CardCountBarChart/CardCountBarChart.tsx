@@ -10,7 +10,7 @@ export const CardCountBarChart = ({ cardCounts }: CardCountBarChartProps) => {
   };
 
   return (
-    <div className='flex flex-col items-center'>
+    <div className="flex flex-col items-center">
       <BarChart
         width={1200}
         height={600}
@@ -22,10 +22,10 @@ export const CardCountBarChart = ({ cardCounts }: CardCountBarChartProps) => {
           bottom: 5,
         }}
       >
-        <XAxis dataKey='name' hide />
+        <XAxis dataKey="name" hide />
         <YAxis />
         <Tooltip labelStyle={{ color: 'black' }} />
-        <Bar dataKey='count'>
+        <Bar dataKey="count">
           {cardCounts.map((entry) => (
             <Cell fill={isRed(entry.card_suit) ? 'red' : 'black'} />
           ))}

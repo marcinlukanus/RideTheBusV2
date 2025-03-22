@@ -61,7 +61,7 @@ const reducer = (
     | { type: 'DRAW_CARDS'; amountToDraw: number; resetScore: boolean }
     | { type: 'ADVANCE_ROUND'; cardToFlip: number }
     | { type: 'GAME_OVER'; cardToFlip: number }
-    | { type: 'WIN_GAME' }
+    | { type: 'WIN_GAME' },
 ) => {
   switch (action.type) {
     case 'DRAW_CARDS':
@@ -78,7 +78,7 @@ const reducer = (
         ...state,
         currentRound: state.currentRound + 1,
         cards: state.cards.map((card, index) =>
-          index === action.cardToFlip ? { ...card, showCardBack: false } : card
+          index === action.cardToFlip ? { ...card, showCardBack: false } : card,
         ),
       };
     case 'GAME_OVER':
@@ -87,7 +87,7 @@ const reducer = (
         isGameOver: true,
         hasWon: false,
         cards: state.cards.map((card, index) =>
-          index === action.cardToFlip ? { ...card, showCardBack: false } : card
+          index === action.cardToFlip ? { ...card, showCardBack: false } : card,
         ),
       };
     case 'WIN_GAME':
@@ -128,17 +128,14 @@ export const useGameState = () => {
     const firstCard = gameState.cards[0];
     const secondCard = gameState.cards[1];
 
-    const isHigher =
-      secondCard.values.numericValue > firstCard.values.numericValue;
+    const isHigher = secondCard.values.numericValue > firstCard.values.numericValue;
 
-    const isLower =
-      secondCard.values.numericValue < firstCard.values.numericValue;
+    const isLower = secondCard.values.numericValue < firstCard.values.numericValue;
 
     const isCorrect =
       (isHigher && guess === 'higher') ||
       (isLower && guess === 'lower') ||
-      (firstCard.values.numericValue === secondCard.values.numericValue &&
-        guess === 'same');
+      (firstCard.values.numericValue === secondCard.values.numericValue && guess === 'same');
 
     if (isCorrect) {
       dispatch({ type: 'ADVANCE_ROUND', cardToFlip: 1 });
