@@ -13,14 +13,13 @@ export const Header = () => {
           <div className='flex items-center'>
             <Link to='/' className='flex items-center'>
               <picture>
-                <source media='(min-width: 1024px)' srcSet='/images/144.png' />
                 <img
-                  src='/images/96.png'
+                  src='/images/144.png'
                   alt='Ride The Bus Logo'
-                  className='h-8 w-auto sm:h-10 md:h-12 lg:h-16'
+                  className='w-auto h-16'
                 />
               </picture>
-              <span className='ml-2 text-xl font-bold text-white xs:hidden'>
+              <span className='ml-2 text-xl font-bold text-white hidden sm:inline'>
                 Ride The Bus
               </span>
             </Link>
@@ -33,7 +32,7 @@ export const Header = () => {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className='flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none'
                 >
-                  <span className='text-sm font-medium hidden xs:inline'>
+                  <span className='text-sm font-medium xs:inline'>
                     {user.user_metadata?.display_name}
                   </span>
                   <svg
