@@ -102,7 +102,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
               state,
             });
           }
-        }
+        },
       )
       .subscribe();
 
@@ -119,10 +119,8 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
             {(['red', 'black'] as RedOrBlack[]).map((color) => (
               <button
                 key={color}
-                className={`py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md ${
-                  color === 'red'
-                    ? 'bg-red-600 text-white'
-                    : 'bg-black text-white'
+                className={`cursor-pointer rounded-lg px-4 py-2 text-lg font-bold shadow-md ${
+                  color === 'red' ? 'bg-red-600 text-white' : 'bg-black text-white'
                 }`}
                 onClick={() => firstRound(color)}
               >
@@ -134,33 +132,29 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       case 2:
         return (
           <>
-            {(['higher', 'lower', 'same'] as HigherLowerOrSame[]).map(
-              (guess) => (
-                <button
-                  key={guess}
-                  className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md bg-white text-black'
-                  onClick={() => secondRound(guess)}
-                >
-                  {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
-                </button>
-              )
-            )}
+            {(['higher', 'lower', 'same'] as HigherLowerOrSame[]).map((guess) => (
+              <button
+                key={guess}
+                className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md"
+                onClick={() => secondRound(guess)}
+              >
+                {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
+              </button>
+            ))}
           </>
         );
       case 3:
         return (
           <>
-            {(['inside', 'outside', 'same'] as InsideOutsideOrSame[]).map(
-              (guess) => (
-                <button
-                  key={guess}
-                  className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md bg-white text-black'
-                  onClick={() => thirdRound(guess)}
-                >
-                  {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
-                </button>
-              )
-            )}
+            {(['inside', 'outside', 'same'] as InsideOutsideOrSame[]).map((guess) => (
+              <button
+                key={guess}
+                className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md"
+                onClick={() => thirdRound(guess)}
+              >
+                {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
+              </button>
+            ))}
           </>
         );
       case 4:
@@ -169,7 +163,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
             {suits.map((suit) => (
               <button
                 key={suit}
-                className={`py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md ${
+                className={`cursor-pointer rounded-lg px-4 py-2 text-lg font-bold shadow-md ${
                   suit === 'HEARTS' || suit === 'DIAMONDS'
                     ? 'bg-red-600 text-white'
                     : 'bg-black text-white'
@@ -187,9 +181,9 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
   };
 
   const renderPlayerGame = (playerState: PlayerState) => (
-    <div className='mb-8 p-6 bg-gray-800 rounded-lg'>
-      <h3 className='text-xl font-bold mb-4'>{playerState.nickname}'s Game</h3>
-      <div className='flex flex-wrap gap-5 justify-center'>
+    <div className="mb-8 rounded-lg bg-gray-800 p-6">
+      <h3 className="mb-4 text-xl font-bold">{playerState.nickname}'s Game</h3>
+      <div className="flex flex-wrap justify-center gap-5">
         {playerState.cards.map((card: GameCard, index: number) => (
           <Card
             key={index}
@@ -200,12 +194,10 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
         ))}
       </div>
       {playerState.isGameOver && (
-        <p className='mt-4 text-lg font-bold'>
-          {playerState.hasWon ? 'Finished!' : 'Game Over!'}
-        </p>
+        <p className="mt-4 text-lg font-bold">{playerState.hasWon ? 'Finished!' : 'Game Over!'}</p>
       )}
-      <p className='mt-2 text-lg'>Round: {playerState.currentRound}</p>
-      <p className='mt-2 text-lg'>Times redrawn: {playerState.timesRedrawn}</p>
+      <p className="mt-2 text-lg">Round: {playerState.currentRound}</p>
+      <p className="mt-2 text-lg">Times redrawn: {playerState.timesRedrawn}</p>
     </div>
   );
 
@@ -227,46 +219,39 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
     ];
 
     // Check if all players have finished successfully
-    const allFinished = allPlayers.every(
-      (player) => player.isGameOver && player.hasWon
-    );
+    const allFinished = allPlayers.every((player) => player.isGameOver && player.hasWon);
 
     if (!allFinished) return null;
 
     // Sort players by score (times redrawn)
-    const sortedPlayers = allPlayers.sort(
-      (a, b) => a.timesRedrawn - b.timesRedrawn
-    );
+    const sortedPlayers = allPlayers.sort((a, b) => a.timesRedrawn - b.timesRedrawn);
     const winner = sortedPlayers[0];
     const isCurrentPlayerWinner = winner.nickname === nickname;
 
     return (
       <>
-        <div className='mt-12 p-8 bg-gray-800 rounded-lg'>
-          <h2 className='text-3xl font-bold mb-6 text-center'>
-            🏆 Final Results 🏆
-          </h2>
-          <div className='space-y-4'>
+        <div className="mt-12 rounded-lg bg-gray-800 p-8">
+          <h2 className="mb-6 text-center text-3xl font-bold">🏆 Final Results 🏆</h2>
+          <div className="space-y-4">
             {sortedPlayers.map((player, index) => (
               <div
                 key={player.nickname}
-                className={`flex justify-between items-center p-4 rounded-lg ${
+                className={`flex items-center justify-between rounded-lg p-4 ${
                   index === 0 ? 'bg-yellow-500/20' : 'bg-gray-700'
                 }`}
               >
-                <div className='flex items-center gap-3'>
-                  <span className='text-xl font-bold'>{index + 1}.</span>
-                  <span className='text-xl'>{player.nickname}</span>
-                  {index === 0 && <span className='text-2xl'>👑</span>}
+                <div className="flex items-center gap-3">
+                  <span className="text-xl font-bold">{index + 1}.</span>
+                  <span className="text-xl">{player.nickname}</span>
+                  {index === 0 && <span className="text-2xl">👑</span>}
                 </div>
-                <div className='text-xl'>
-                  {player.timesRedrawn}{' '}
-                  {player.timesRedrawn === 1 ? 'redraw' : 'redraws'}
+                <div className="text-xl">
+                  {player.timesRedrawn} {player.timesRedrawn === 1 ? 'redraw' : 'redraws'}
                 </div>
               </div>
             ))}
           </div>
-          <p className='text-center mt-6 text-xl font-bold'>
+          <p className="mt-6 text-center text-xl font-bold">
             🎉 {winner.nickname} wins with {winner.timesRedrawn}{' '}
             {winner.timesRedrawn === 1 ? 'redraw' : 'redraws'}! 🎉
           </p>
@@ -284,18 +269,16 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       hasWon: state.hasWon,
     })),
   ];
-  const allFinished = allPlayers.every(
-    (player) => player.isGameOver && player.hasWon
-  );
+  const allFinished = allPlayers.every((player) => player.isGameOver && player.hasWon);
 
   return (
-    <div className='container mx-auto px-4'>
+    <div className="container mx-auto px-4">
       {!allFinished ? (
         <>
-          <div className='mb-8'>
-            <h2 className='text-2xl font-bold mb-4'>Your Game</h2>
-            <div className='flex flex-col items-center justify-center'>
-              <div className='flex flex-wrap gap-5 justify-center'>
+          <div className="mb-8">
+            <h2 className="mb-4 text-2xl font-bold">Your Game</h2>
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-wrap justify-center gap-5">
                 {gameState.cards.map((card: GameCard, index: number) => (
                   <Card
                     key={index}
@@ -307,9 +290,9 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
               </div>
 
               {gameState.isGameOver && !gameState.hasWon && (
-                <div className='flex mt-8'>
+                <div className="mt-8 flex">
                   <button
-                    className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-white text-black shadow-md active:translate-y-1'
+                    className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md active:translate-y-1"
                     onClick={() => redrawCards(false)}
                   >
                     Redraw Cards
@@ -317,33 +300,25 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
                 </div>
               )}
 
-              {!gameState.isGameOver && (
-                <div className='flex gap-5 mt-8'>{renderButtons()}</div>
-              )}
+              {!gameState.isGameOver && <div className="mt-8 flex gap-5">{renderButtons()}</div>}
 
               {gameState.isGameOver && (
-                <p className='mt-8 text-lg font-bold'>
-                  {gameState.hasWon
-                    ? 'Finished! High five! ✋'
-                    : 'Take a drink!'}
+                <p className="mt-8 text-lg font-bold">
+                  {gameState.hasWon ? 'Finished! High five! ✋' : 'Take a drink!'}
                 </p>
               )}
 
-              <p className='mt-4 text-xl font-bold'>
-                Times redrawn: {gameState.timesRedrawn}
-              </p>
+              <p className="mt-4 text-xl font-bold">Times redrawn: {gameState.timesRedrawn}</p>
             </div>
           </div>
 
-          <div className='mt-8'>
-            <h2 className='text-2xl font-bold mb-4'>Other Players</h2>
-            <div className='gap-6'>
+          <div className="mt-8">
+            <h2 className="mb-4 text-2xl font-bold">Other Players</h2>
+            <div className="gap-6">
               {Object.entries(playersState)
                 .filter(([playerNickname]) => playerNickname !== nickname)
                 .map(([playerNickname, state]) => (
-                  <div key={playerNickname}>
-                    {renderPlayerGame(state as PlayerState)}
-                  </div>
+                  <div key={playerNickname}>{renderPlayerGame(state as PlayerState)}</div>
                 ))}
             </div>
           </div>

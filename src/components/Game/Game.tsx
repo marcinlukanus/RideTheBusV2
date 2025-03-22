@@ -13,18 +13,13 @@ import { postScore } from '../../api/postScore';
 // import { BestScores } from '../BestScores/BestScores';
 import { LongestRides } from '../LongestRides/LongestRides';
 import { postCardCounts } from '../../api/postCardCounts';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const Game = () => {
   const { width, height } = useWindowSize();
+  const { user } = useAuth();
 
-  const {
-    gameState,
-    dispatch,
-    finalRound,
-    firstRound,
-    secondRound,
-    thirdRound,
-  } = useGameState();
+  const { gameState, dispatch, finalRound, firstRound, secondRound, thirdRound } = useGameState();
 
   useEffect(() => {
     // Draw cards on initial render
@@ -34,9 +29,9 @@ export const Game = () => {
   useEffect(() => {
     // Post score when game is won
     if (gameState.isGameOver && gameState.hasWon) {
-      postScore(gameState.timesRedrawn);
+      postScore(gameState.timesRedrawn, user?.id);
     }
-  }, [gameState.isGameOver, gameState.hasWon, gameState.timesRedrawn]);
+  }, [gameState.isGameOver, gameState.hasWon, gameState.timesRedrawn, user?.id]);
 
   useEffect(() => {
     // Post cards after game is over
@@ -53,10 +48,8 @@ export const Game = () => {
             {(['red', 'black'] as RedOrBlack[]).map((color) => (
               <button
                 key={color}
-                className={`py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md ${
-                  color === 'red'
-                    ? 'bg-red-600 text-white'
-                    : 'bg-black text-white'
+                className={`cursor-pointer rounded-lg px-4 py-2 text-lg font-bold shadow-md ${
+                  color === 'red' ? 'bg-red-600 text-white' : 'bg-black text-white'
                 }`}
                 onClick={() => firstRound(color)}
               >
@@ -68,33 +61,29 @@ export const Game = () => {
       case 2:
         return (
           <>
-            {(['higher', 'lower', 'same'] as HigherLowerOrSame[]).map(
-              (guess) => (
-                <button
-                  key={guess}
-                  className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md bg-white text-black'
-                  onClick={() => secondRound(guess)}
-                >
-                  {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
-                </button>
-              )
-            )}
+            {(['higher', 'lower', 'same'] as HigherLowerOrSame[]).map((guess) => (
+              <button
+                key={guess}
+                className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md"
+                onClick={() => secondRound(guess)}
+              >
+                {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
+              </button>
+            ))}
           </>
         );
       case 3:
         return (
           <>
-            {(['inside', 'outside', 'same'] as InsideOutsideOrSame[]).map(
-              (guess) => (
-                <button
-                  key={guess}
-                  className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md bg-white text-black'
-                  onClick={() => thirdRound(guess)}
-                >
-                  {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
-                </button>
-              )
-            )}
+            {(['inside', 'outside', 'same'] as InsideOutsideOrSame[]).map((guess) => (
+              <button
+                key={guess}
+                className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md"
+                onClick={() => thirdRound(guess)}
+              >
+                {guess.charAt(0).toUpperCase() + guess.slice(1).toLowerCase()}
+              </button>
+            ))}
           </>
         );
       case 4:
@@ -103,7 +92,7 @@ export const Game = () => {
             {suits.map((suit) => (
               <button
                 key={suit}
-                className={`py-2 px-4 text-lg font-bold rounded-lg cursor-pointer shadow-md ${
+                className={`cursor-pointer rounded-lg px-4 py-2 text-lg font-bold shadow-md ${
                   suit === 'HEARTS' || suit === 'DIAMONDS'
                     ? 'bg-red-600 text-white'
                     : 'bg-black text-white'
@@ -124,8 +113,8 @@ export const Game = () => {
     <>
       {gameState.hasWon && <Confetti width={width} height={height} />}
 
-      <div className='flex flex-col items-center justify-center'>
-        <div className='flex flex-wrap gap-5 justify-center'>
+      <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-wrap justify-center gap-5">
           {gameState.cards.map((card, index) => (
             <Card
               key={index}
@@ -137,9 +126,9 @@ export const Game = () => {
         </div>
 
         {gameState.isGameOver && (
-          <div className='flex mt-8'>
+          <div className="mt-8 flex">
             <button
-              className='py-2 px-4 text-lg font-bold rounded-lg cursor-pointer bg-white text-black shadow-md active:translate-y-1'
+              className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md active:translate-y-1"
               onClick={() =>
                 dispatch({
                   type: 'DRAW_CARDS',
@@ -153,21 +142,17 @@ export const Game = () => {
           </div>
         )}
 
-        {!gameState.isGameOver && (
-          <div className='flex gap-5 mt-8'>{renderButtons()}</div>
-        )}
+        {!gameState.isGameOver && <div className="mt-8 flex gap-5">{renderButtons()}</div>}
 
         {gameState.isGameOver && (
-          <p className='mt-8 text-lg font-bold'>
+          <p className="mt-8 text-lg font-bold">
             {gameState.hasWon ? 'You won!' : 'Take a drink!'}
           </p>
         )}
 
-        <p className='mt-4 text-xl font-bold'>
-          Times redrawn: {gameState.timesRedrawn}
-        </p>
+        <p className="mt-4 text-xl font-bold">Times redrawn: {gameState.timesRedrawn}</p>
 
-        <div className='flex gap-5 mt-8'>
+        <div className="mt-8 flex gap-5">
           {/* <BestScores /> */}
           <LongestRides />
         </div>

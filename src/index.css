@@ -1,6 +1,13 @@
 @import './modern-noramlize.css';
 @import 'tailwindcss';
 
+@theme {
+  --color-mint-500: oklch(0.72 0.11 178);
+  --breakpoint-xs: 25rem;
+  --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 120rem;
+}
+
 :root {
   line-height: 1.5;
   font-weight: 400;
