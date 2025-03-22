@@ -42,7 +42,7 @@ export const Header = () => {
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none dark:text-gray-300 dark:hover:text-white"
+                  className="flex items-center space-x-2 text-gray-700 hover:cursor-pointer hover:text-gray-900 focus:outline-none dark:text-gray-300 dark:hover:text-white"
                 >
                   <img
                     src={profile?.avatar_url || '/images/default-avatar.png'}

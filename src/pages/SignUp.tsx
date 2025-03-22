@@ -1,9 +1,20 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 import supabase, { uploadAvatar } from '../utils/supabase';
 import type { Database } from '../types/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Insert'];
+
+const signUpSchema = z.object({
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(20, 'Username must be at most 20 characters')
+    .regex(/^[a-zA-Z0-9]+$/, 'Username must only contain letters, numbers, and underscores'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
 
 export const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -36,6 +47,14 @@ export const SignUp = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+    const validationResult = signUpSchema.safeParse({ username, email, password });
+
+    if (!validationResult.success) {
+      setError(validationResult.error.errors.map((err) => err.message).join(', '));
+      setLoading(false);
+      return;
+    }
 
     try {
       // Sign up the user - this will also automatically sign them in
