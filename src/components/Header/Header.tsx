@@ -7,7 +7,7 @@ export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className='shadow mt-4'>
+    <header className='shadow mt-4 pb-4'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex justify-between h-16'>
           <div className='flex items-center'>
@@ -32,7 +32,7 @@ export const Header = () => {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className='flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none'
                 >
-                  <span className='text-sm font-medium xs:inline'>
+                  <span className='text-md font-medium xs:inline'>
                     {user.user_metadata?.display_name}
                   </span>
                   <svg
@@ -54,11 +54,11 @@ export const Header = () => {
                   <div className='absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5'>
                     <div className='py-1'>
                       <Link
-                        to='/stats'
+                        to={`/${user.user_metadata.display_name}/profile`}
                         className='block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        Your Stats
+                        Your Profile
                       </Link>
                       <button
                         onClick={() => {

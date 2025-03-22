@@ -17,7 +17,10 @@ export const SignUp = () => {
 
     try {
       // Sign up the user
-      const { error: signUpError } = await supabase.auth.signUp({
+      const {
+        data: { user },
+        error: signUpError,
+      } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -27,7 +30,7 @@ export const SignUp = () => {
         },
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError || !user) throw signUpError;
 
       // Auto-login after successful signup
       const { error: signInError } = await supabase.auth.signInWithPassword({

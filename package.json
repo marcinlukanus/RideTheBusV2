@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-types": "supabase gen types typescript --project-id rqghjlamiucwasudzbhg > src/types/supabase.ts"
+    "generate-types": "supabase gen types typescript --project-id rqghjlamiucwasudzbhg > src/types/database.types.ts"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "1.2.2",

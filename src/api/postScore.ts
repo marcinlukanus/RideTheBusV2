@@ -1,9 +1,10 @@
 import supabase from '../utils/supabase';
 
-export const postScore = async (score: number) => {
+export const postScore = async (score: number, userId?: string) => {
   const { data, error } = await supabase.from('scores').insert([
     {
       score,
+      user_id: userId,
     },
   ]);
 

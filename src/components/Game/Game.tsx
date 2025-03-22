@@ -13,9 +13,11 @@ import { postScore } from '../../api/postScore';
 // import { BestScores } from '../BestScores/BestScores';
 import { LongestRides } from '../LongestRides/LongestRides';
 import { postCardCounts } from '../../api/postCardCounts';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const Game = () => {
   const { width, height } = useWindowSize();
+  const { user } = useAuth();
 
   const {
     gameState,
@@ -34,9 +36,14 @@ export const Game = () => {
   useEffect(() => {
     // Post score when game is won
     if (gameState.isGameOver && gameState.hasWon) {
-      postScore(gameState.timesRedrawn);
+      postScore(gameState.timesRedrawn, user?.id);
     }
-  }, [gameState.isGameOver, gameState.hasWon, gameState.timesRedrawn]);
+  }, [
+    gameState.isGameOver,
+    gameState.hasWon,
+    gameState.timesRedrawn,
+    user?.id,
+  ]);
 
   useEffect(() => {
     // Post cards after game is over
