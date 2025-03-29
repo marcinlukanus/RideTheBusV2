@@ -9,7 +9,7 @@ export const Footer = (): JSX.Element => {
             <picture>
               <img src="/images/logo/144.png" alt="Ride The Bus Logo" className="h-16 w-auto" />
             </picture>
-            <span className="xs:inline ml-2 hidden text-xl font-bold text-white">Ride The Bus</span>
+            <span className="xs:inline ml-2 text-xl font-bold text-white">Ride The Bus</span>
           </Link>
         </div>
 
