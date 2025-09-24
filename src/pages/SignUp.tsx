@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import supabase from '../utils/supabase';
@@ -95,6 +96,11 @@ export const SignUp = () => {
 
   return (
     <div className="flex min-h-screen items-start justify-center px-4 pt-20 sm:px-6 lg:px-8">
+      <Helmet prioritizeSeoTags>
+        <title>Sign Up – Ride The Bus</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://ridethebus.party/sign-up" />
+      </Helmet>
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-2xl dark:bg-gray-800">
         <div className="flex flex-col items-center">
           <div className="group relative mb-4 h-32 w-32 cursor-pointer" onClick={handleAvatarClick}>

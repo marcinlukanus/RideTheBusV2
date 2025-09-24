@@ -6,6 +6,7 @@ import { Database } from '../types/database.types';
 import { useAuth } from '../contexts/AuthContext';
 import supabase from '../utils/supabase';
 import { uploadAvatar } from '../api/uploadAvatar';
+import { Helmet } from 'react-helmet-async';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Score = Database['public']['Tables']['scores']['Row'];
@@ -107,6 +108,17 @@ export const Profile = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Helmet prioritizeSeoTags>
+        <title>{profile.username} – Ride The Bus Profile</title>
+        <meta
+          name="description"
+          content={`See ${profile.username}'s Ride The Bus scores and avatar.`}
+        />
+        <link
+          rel="canonical"
+          href={`https://ridethebus.party/${encodeURIComponent(profile.username)}/profile`}
+        />
+      </Helmet>
       <div className="mb-8 flex flex-col items-center">
         <div
           className={`relative mb-4 h-32 w-32 ${isOwnProfile ? 'group cursor-pointer' : ''}`}
