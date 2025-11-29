@@ -19,4 +19,3 @@ export const getDailySeed = async (): Promise<DailySeed> => {
 
   return data[0] as DailySeed;
 };
-

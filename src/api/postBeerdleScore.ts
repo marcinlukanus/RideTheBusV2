@@ -29,9 +29,8 @@ export const postBeerdleScore = async (
 
   // If user has already completed today's Beerdle, throw an error
   if (result.already_completed) {
-    throw new Error('You have already completed today\'s Beerdle!');
+    throw new Error("You have already completed today's Beerdle!");
   }
 
   return result;
 };
-
