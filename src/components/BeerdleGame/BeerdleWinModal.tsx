@@ -63,7 +63,7 @@ export const BeerdleWinModal = ({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-2xl text-gray-400 transition-colors hover:text-white"
+          className="absolute top-4 right-4 text-2xl text-gray-400 transition-colors hover:text-white"
           aria-label="Close"
         >
           ×
@@ -104,7 +104,7 @@ export const BeerdleWinModal = ({
         {/* Share button */}
         <button
           onClick={handleShare}
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-full bg-amber-600 px-6 py-3 text-lg font-bold text-white transition-colors hover:bg-amber-500"
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-full bg-amber-600 px-6 py-3 text-lg font-bold text-white transition-colors hover:cursor-pointer hover:bg-amber-500"
         >
           {copied ? 'Copied!' : 'Share'}
           <svg
@@ -120,7 +120,7 @@ export const BeerdleWinModal = ({
         {/* Copy link */}
         <button
           onClick={handleCopy}
-          className="text-sm text-gray-400 underline transition-colors hover:text-white"
+          className="text-sm text-gray-400 underline transition-colors hover:cursor-pointer hover:text-white"
         >
           {copied ? 'Copied to clipboard!' : 'Copy result to clipboard'}
         </button>
@@ -128,4 +128,3 @@ export const BeerdleWinModal = ({
     </div>
   );
 };
-
