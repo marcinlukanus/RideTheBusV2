@@ -35,12 +35,11 @@ export const Beerdle = () => {
       <h1 className="mb-2 text-4xl leading-tight font-bold md:text-5xl">
         <span className="text-amber-400">Beerdle</span>
       </h1>
-      <h4 className="mt-0 mb-6 text-xl italic text-gray-300 md:text-2xl">
-        Daily Challenge – Same cards for everyone
+      <h4 className="mt-0 mb-6 text-xl italic md:text-2xl">
+        Daily Challenge - Same cards for everyone
       </h4>
 
       <BeerdleGame />
     </div>
   );
 };
-
