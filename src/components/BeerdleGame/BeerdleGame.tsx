@@ -12,7 +12,11 @@ import { useWindowSize } from '../../helpers/hooks/useWindowSize';
 import { useAuth } from '../../contexts/AuthContext';
 import { getDailySeed, DailySeed } from '../../api/getDailySeed';
 import { postBeerdleScore } from '../../api/postBeerdleScore';
-import { getTodayBeerdleScore, BeerdleScore } from '../../api/getUserBeerdleStats';
+import {
+  getTodayBeerdleScore,
+  getUserBeerdleStats,
+  BeerdleScore,
+} from '../../api/getUserBeerdleStats';
 import { BeerdleWinModal } from './BeerdleWinModal';
 
 export const BeerdleGame = () => {
@@ -33,6 +37,7 @@ export const BeerdleGame = () => {
   const [showWinModal, setShowWinModal] = useState(false);
   const [isNewBest, setIsNewBest] = useState(false);
   const [previousBest, setPreviousBest] = useState<number | null>(null);
+  const [userBestScore, setUserBestScore] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
   const [existingScore, setExistingScore] = useState<BeerdleScore | null>(null);
@@ -47,6 +52,15 @@ export const BeerdleGame = () => {
 
         // Check if logged-in user has already completed today's Beerdle
         if (user?.id) {
+          // Fetch user's Beerdle stats to get their best score
+          try {
+            const stats = await getUserBeerdleStats(user.id);
+            setUserBestScore(stats.bestScore);
+          } catch {
+            // Stats fetch failed, continue without best score
+            console.log('Could not fetch user Beerdle stats');
+          }
+
           const todayScore = await getTodayBeerdleScore(user.id);
           if (todayScore) {
             setAlreadyCompleted(true);
@@ -85,8 +99,19 @@ export const BeerdleGame = () => {
             score: gameState.attempts,
             created_at: new Date().toISOString(),
           });
-          setIsNewBest(true);
-          setPreviousBest(null);
+
+          // Determine if this is a new best score
+          // A lower score (fewer attempts) is better
+          if (userBestScore !== null) {
+            const isNewBestScore = gameState.attempts < userBestScore;
+            setIsNewBest(isNewBestScore);
+            setPreviousBest(userBestScore);
+          } else {
+            // First game ever - this is their first (and best) score
+            setIsNewBest(false);
+            setPreviousBest(null);
+          }
+
           setShowWinModal(true);
         } catch (err) {
           console.error('Failed to save score:', err);
@@ -107,6 +132,7 @@ export const BeerdleGame = () => {
     gameState.gameDate,
     user,
     alreadyCompleted,
+    userBestScore,
   ]);
 
   const renderButtons = () => {

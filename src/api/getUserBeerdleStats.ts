@@ -17,6 +17,29 @@ export type BeerdleStats = {
   longestStreak: number;
 };
 
+/**
+ * Get today's date in YYYY-MM-DD format using local timezone.
+ * This ensures consistent date handling regardless of user's timezone.
+ */
+function getLocalDateString(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Add days to a date string (YYYY-MM-DD format) and return new date string.
+ * Handles date math without timezone issues.
+ */
+function addDaysToDateString(dateStr: string, days: number): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  // Create date at noon to avoid DST issues
+  const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+  date.setDate(date.getDate() + days);
+  return getLocalDateString(date);
+}
+
 export const getUserBeerdleStats = async (userId: string): Promise<BeerdleStats> => {
   const { data, error } = await supabase
     .from('beerdle_scores')
@@ -67,41 +90,30 @@ function calculateStreaks(scores: BeerdleScore[]): {
     return { currentStreak: 0, longestStreak: 0 };
   }
 
-  // Sort by date descending (most recent first)
-  const sortedScores = [...scores].sort(
-    (a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime(),
-  );
+  // Sort by date string descending (most recent first)
+  // Since game_date is YYYY-MM-DD format, string comparison works correctly
+  const sortedScores = [...scores].sort((a, b) => b.game_date.localeCompare(a.game_date));
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  const todayStr = getLocalDateString();
+  const yesterdayStr = addDaysToDateString(todayStr, -1);
 
   // Check if most recent game is today or yesterday (for current streak)
-  const mostRecentDate = new Date(sortedScores[0].game_date);
-  mostRecentDate.setHours(0, 0, 0, 0);
+  const mostRecentDateStr = sortedScores[0].game_date;
 
   let currentStreak = 0;
   let longestStreak = 0;
   let tempStreak = 0;
 
   // Calculate current streak (must be consecutive from today or yesterday)
-  const isStreakActive =
-    mostRecentDate.getTime() === today.getTime() ||
-    mostRecentDate.getTime() === yesterday.getTime();
+  const isStreakActive = mostRecentDateStr === todayStr || mostRecentDateStr === yesterdayStr;
 
   if (isStreakActive) {
-    let expectedDate = mostRecentDate;
+    let expectedDateStr = mostRecentDateStr;
 
     for (const score of sortedScores) {
-      const scoreDate = new Date(score.game_date);
-      scoreDate.setHours(0, 0, 0, 0);
-
-      if (scoreDate.getTime() === expectedDate.getTime()) {
+      if (score.game_date === expectedDateStr) {
         currentStreak++;
-        expectedDate = new Date(expectedDate);
-        expectedDate.setDate(expectedDate.getDate() - 1);
+        expectedDateStr = addDaysToDateString(expectedDateStr, -1);
       } else {
         break;
       }
@@ -109,23 +121,18 @@ function calculateStreaks(scores: BeerdleScore[]): {
   }
 
   // Calculate longest streak
-  const sortedByDateAsc = [...scores].sort(
-    (a, b) => new Date(a.game_date).getTime() - new Date(b.game_date).getTime(),
-  );
+  // Sort by date string ascending (oldest first)
+  const sortedByDateAsc = [...scores].sort((a, b) => a.game_date.localeCompare(b.game_date));
 
-  let prevDate: Date | null = null;
+  let prevDateStr: string | null = null;
 
   for (const score of sortedByDateAsc) {
-    const scoreDate = new Date(score.game_date);
-    scoreDate.setHours(0, 0, 0, 0);
-
-    if (prevDate === null) {
+    if (prevDateStr === null) {
       tempStreak = 1;
     } else {
-      const expectedNext = new Date(prevDate);
-      expectedNext.setDate(expectedNext.getDate() + 1);
+      const expectedNextStr = addDaysToDateString(prevDateStr, 1);
 
-      if (scoreDate.getTime() === expectedNext.getTime()) {
+      if (score.game_date === expectedNextStr) {
         tempStreak++;
       } else {
         tempStreak = 1;
@@ -133,14 +140,14 @@ function calculateStreaks(scores: BeerdleScore[]): {
     }
 
     longestStreak = Math.max(longestStreak, tempStreak);
-    prevDate = scoreDate;
+    prevDateStr = score.game_date;
   }
 
   return { currentStreak, longestStreak };
 }
 
 export const getTodayBeerdleScore = async (userId: string): Promise<BeerdleScore | null> => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
 
   const { data, error } = await supabase
     .from('beerdle_scores')
@@ -156,4 +163,3 @@ export const getTodayBeerdleScore = async (userId: string): Promise<BeerdleScore
 
   return data as BeerdleScore | null;
 };
-
