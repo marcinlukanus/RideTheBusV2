@@ -197,7 +197,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
         <p className="mt-4 text-lg font-bold">{playerState.hasWon ? 'Finished!' : 'Game Over!'}</p>
       )}
       <p className="mt-2 text-lg">Round: {playerState.currentRound}</p>
-      <p className="mt-2 text-lg">Times redrawn: {playerState.timesRedrawn}</p>
+      <p className="mt-2 text-lg">Drinks taken: {playerState.timesRedrawn}</p>
     </div>
   );
 
@@ -308,7 +308,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
                 </p>
               )}
 
-              <p className="mt-4 text-xl font-bold">Times redrawn: {gameState.timesRedrawn}</p>
+              <p className="mt-4 text-xl font-bold">Drinks taken: {gameState.timesRedrawn}</p>
             </div>
           </div>
 
