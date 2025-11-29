@@ -44,6 +44,7 @@ const reducer = (state: BeerdleGameState, action: BeerdleAction): BeerdleGameSta
   switch (action.type) {
     case 'SET_SEED': {
       // When seed is set, draw the first set of cards
+      // Attempts starts at 0 - player hasn't had any drinks yet
       const newCards = drawSeededCards(action.seed, 1);
       return {
         ...state,
@@ -51,7 +52,7 @@ const reducer = (state: BeerdleGameState, action: BeerdleAction): BeerdleGameSta
         dayNumber: action.dayNumber,
         gameDate: action.gameDate,
         cards: newCards,
-        attempts: 1,
+        attempts: 0,
         currentRound: 1,
         hasWon: false,
         isGameOver: false,
@@ -60,8 +61,10 @@ const reducer = (state: BeerdleGameState, action: BeerdleAction): BeerdleGameSta
     }
     case 'DRAW_CARDS': {
       if (state.seed === null) return state;
+      // Each redraw means the player takes a drink
       const newAttempts = state.attempts + 1;
-      const newCards = drawSeededCards(state.seed, newAttempts);
+      // Draw number is attempts + 1 (first draw was 1, second is 2, etc.)
+      const newCards = drawSeededCards(state.seed, newAttempts + 1);
       return {
         ...state,
         cards: newCards,
@@ -203,7 +206,7 @@ export const useBeerdleGameState = () => {
   const generateShareText = useCallback((): string => {
     if (!gameState.hasWon || !gameState.dayNumber) return '';
 
-    const beers = '🍺'.repeat(gameState.attempts);
+    const beers = gameState.attempts === 0 ? '🏆 Stayed dry!' : '🍺'.repeat(gameState.attempts);
 
     return `Beerdle #${gameState.dayNumber}\n\n${beers}\n\nhttps://ridethebus.party/beerdle`;
   }, [gameState.hasWon, gameState.dayNumber, gameState.attempts]);

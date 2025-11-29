@@ -46,7 +46,7 @@ export const BeerdleWinModal = ({
           title: `Beerdle #${dayNumber}`,
           text: shareText,
         });
-      } catch (err) {
+      } catch {
         // User cancelled or share failed, fall back to copy
         handleCopy();
       }
@@ -55,7 +55,8 @@ export const BeerdleWinModal = ({
     }
   };
 
-  const beers = '🍺'.repeat(attempts);
+  const beers = attempts === 0 ? '🏆' : '🍺'.repeat(attempts);
+  const isPerfectGame = attempts === 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -71,19 +72,32 @@ export const BeerdleWinModal = ({
 
         {/* Star icon */}
         <div className="mb-4 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-amber-600/90">
-            <span className="text-3xl">⭐</span>
+          <div
+            className={`flex h-16 w-16 items-center justify-center rounded-xl ${isPerfectGame ? 'bg-yellow-500/90' : 'bg-amber-600/90'}`}
+          >
+            <span className="text-3xl">{isPerfectGame ? '🏆' : '⭐'}</span>
           </div>
         </div>
 
         {/* Title */}
-        <h2 className="mb-2 text-3xl font-bold text-white">Congratulations!</h2>
+        <h2 className="mb-2 text-3xl font-bold text-white">
+          {isPerfectGame ? 'Perfect Game!' : 'Congratulations!'}
+        </h2>
 
         {/* Subtitle */}
         <p className="mb-6 text-lg text-gray-300">
-          You completed today's Beerdle in{' '}
-          <span className="font-bold text-amber-400">{attempts}</span> attempt
-          {attempts !== 1 ? 's' : ''}!
+          {isPerfectGame ? (
+            <>
+              You completed today&apos;s Beerdle with{' '}
+              <span className="font-bold text-yellow-400">no drinks</span>!
+            </>
+          ) : (
+            <>
+              You completed today&apos;s Beerdle with{' '}
+              <span className="font-bold text-amber-400">{attempts}</span> drink
+              {attempts !== 1 ? 's' : ''}!
+            </>
+          )}
         </p>
 
         {/* New best indicator */}
@@ -97,7 +111,9 @@ export const BeerdleWinModal = ({
 
         {/* Beer emojis */}
         <div className="mb-6 rounded-xl bg-gray-800 p-4">
-          <p className="mb-2 text-sm text-gray-400">Today's drinks:</p>
+          <p className="mb-2 text-sm text-gray-400">
+            {isPerfectGame ? 'Result:' : "Today's drinks:"}
+          </p>
           <p className="text-3xl">{beers}</p>
         </div>
 

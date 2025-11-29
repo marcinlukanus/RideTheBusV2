@@ -229,8 +229,9 @@ export const BeerdleGame = () => {
 
   // Show completed state if user has already played today
   if (alreadyCompleted && existingScore && dailySeedData) {
-    const beers = '🍺'.repeat(existingScore.score);
-    const shareText = `Beerdle #${dailySeedData.day_number}\n\n${beers}\n\nhttps://ridethebus.party/beerdle`;
+    const isPerfectGame = existingScore.score === 0;
+    const beers = isPerfectGame ? '🏆' : '🍺'.repeat(existingScore.score);
+    const shareText = `Beerdle #${dailySeedData.day_number}\n\n${isPerfectGame ? '🏆 Stayed dry!' : beers}\n\nhttps://ridethebus.party/beerdle`;
 
     return (
       <div className="flex flex-col items-center justify-center">
@@ -241,20 +242,33 @@ export const BeerdleGame = () => {
 
         <div className="mb-6 rounded-xl bg-gray-800 p-8 text-center">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-green-600/90">
-              <span className="text-3xl">✓</span>
+            <div
+              className={`flex h-16 w-16 items-center justify-center rounded-xl ${isPerfectGame ? 'bg-yellow-500/90' : 'bg-green-600/90'}`}
+            >
+              <span className="text-3xl">{isPerfectGame ? '🏆' : '✓'}</span>
             </div>
           </div>
 
           <h2 className="mb-2 text-2xl font-bold text-white">Already Completed!</h2>
           <p className="mb-4 text-gray-300">
-            You finished today&apos;s Beerdle in{' '}
-            <span className="font-bold text-amber-400">{existingScore.score}</span> attempt
-            {existingScore.score !== 1 ? 's' : ''}
+            {isPerfectGame ? (
+              <>
+                You finished today&apos;s Beerdle with{' '}
+                <span className="font-bold text-yellow-400">no drinks</span>!
+              </>
+            ) : (
+              <>
+                You finished today&apos;s Beerdle with{' '}
+                <span className="font-bold text-amber-400">{existingScore.score}</span> drink
+                {existingScore.score !== 1 ? 's' : ''}
+              </>
+            )}
           </p>
 
           <div className="mb-6 rounded-lg bg-gray-700 p-4">
-            <p className="mb-2 text-sm text-gray-400">Your result:</p>
+            <p className="mb-2 text-sm text-gray-400">
+              {isPerfectGame ? 'Result:' : 'Your drinks:'}
+            </p>
             <p className="text-3xl">{beers}</p>
           </div>
 
