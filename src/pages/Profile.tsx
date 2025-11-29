@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getProfileByUsername } from '../api/getProfileByUsername';
 import { getUserScores } from '../api/getUserScores';
+import { getUserBeerdleStats, BeerdleStats } from '../api/getUserBeerdleStats';
 import { Database } from '../types/database.types';
 import { useAuth } from '../contexts/AuthContext';
 import supabase from '../utils/supabase';
@@ -15,6 +16,7 @@ export const Profile = () => {
   const { username } = useParams<{ username: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [scores, setScores] = useState<Score[]>([]);
+  const [beerdleStats, setBeerdleStats] = useState<BeerdleStats | null>(null);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -42,6 +44,15 @@ export const Profile = () => {
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
           ),
         );
+
+        // Fetch Beerdle stats
+        try {
+          const beerdleData = await getUserBeerdleStats(profileData.id);
+          setBeerdleStats(beerdleData);
+        } catch {
+          // Beerdle stats are optional, don't fail the whole page
+          console.log('Could not fetch Beerdle stats');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong');
       } finally {
@@ -154,6 +165,41 @@ export const Profile = () => {
         )}
       </div>
 
+      {/* Beerdle Stats Section */}
+      {beerdleStats && beerdleStats.totalGames > 0 && (
+        <div className="mx-auto mb-8 w-full max-w-2xl">
+          <h2 className="mb-4 text-2xl font-bold text-amber-400">🍺 Beerdle Stats</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="rounded-lg bg-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-amber-400">{beerdleStats.totalGames}</p>
+              <p className="text-sm text-gray-400">Games Played</p>
+            </div>
+            <div className="rounded-lg bg-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-green-400">{beerdleStats.bestScore}</p>
+              <p className="text-sm text-gray-400">Best Score</p>
+            </div>
+            <div className="rounded-lg bg-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-blue-400">{beerdleStats.averageScore}</p>
+              <p className="text-sm text-gray-400">Avg Score</p>
+            </div>
+            <div className="rounded-lg bg-gray-800 p-4 text-center">
+              <p className="text-2xl font-bold text-orange-400">
+                {beerdleStats.currentStreak}
+                {beerdleStats.currentStreak > 0 && ' 🔥'}
+              </p>
+              <p className="text-sm text-gray-400">Current Streak</p>
+            </div>
+          </div>
+          {beerdleStats.longestStreak > 0 && (
+            <p className="mt-2 text-center text-sm text-gray-400">
+              Longest streak: {beerdleStats.longestStreak} day
+              {beerdleStats.longestStreak !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
+
+      <h2 className="mb-4 text-2xl font-bold">🚌 Ride The Bus Scores</h2>
       <table className="mx-auto w-full max-w-2xl">
         <thead>
           <tr>

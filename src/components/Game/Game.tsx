@@ -150,7 +150,7 @@ export const Game = () => {
           </p>
         )}
 
-        <p className="mt-4 text-xl font-bold">Times redrawn: {gameState.timesRedrawn}</p>
+        <p className="mt-4 text-xl font-bold">Drinks taken: {gameState.timesRedrawn}</p>
 
         <div className="mt-8 flex gap-5">
           {/* <BestScores /> */}

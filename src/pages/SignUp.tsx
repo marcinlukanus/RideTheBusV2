@@ -127,7 +127,7 @@ export const SignUp = () => {
             Or{' '}
             <Link
               to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="font-medium text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"
             >
               sign in to your account
             </Link>
@@ -200,7 +200,7 @@ export const SignUp = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              className="group relative flex w-full justify-center rounded-md border border-transparent bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:cursor-pointer hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>

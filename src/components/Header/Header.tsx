@@ -37,6 +37,16 @@ export const Header = () => {
             </Link>
           </div>
 
+          {/* Navigation Links */}
+          <nav className="flex items-center gap-4">
+            <Link
+              to="/beerdle"
+              className="rounded-md px-3 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-400/10 hover:text-amber-300"
+            >
+              🍺 Beerdle
+            </Link>
+          </nav>
+
           <div className="flex items-center">
             {user ? (
               <div className="relative" ref={menuRef}>
@@ -100,7 +110,7 @@ export const Header = () => {
                 </Link>
                 <Link
                   to="/sign-up"
-                  className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  className="rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white hover:bg-amber-700"
                 >
                   Sign Up
                 </Link>
