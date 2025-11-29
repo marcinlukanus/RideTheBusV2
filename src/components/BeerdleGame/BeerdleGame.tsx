@@ -314,7 +314,7 @@ export const BeerdleGame = () => {
         )}
 
         <p className="mt-4 text-xl font-bold">
-          Attempts: <span className="text-amber-400">{gameState.attempts}</span>
+          Drinks taken: <span className="text-amber-400">{gameState.attempts}</span>
         </p>
 
         {!user && (
