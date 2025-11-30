@@ -13,23 +13,28 @@ export const Beerdle = () => {
         />
         <meta
           name="keywords"
-          content="beerdle, daily drinking game, ride the bus, wordle drinking game, daily card game"
+          content="beerdle, daily drinking game, ride the bus, wordle drinking game, daily card game, daily challenge, drinking card game"
         />
 
         {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Ride The Bus" />
         <meta property="og:title" content="Beerdle - Daily Ride The Bus Challenge" />
         <meta
           property="og:description"
-          content="Same cards for everyone. How many drinks will you take today?"
+          content="Same cards for everyone. How many drinks will you take today? Play the daily Ride The Bus challenge!"
         />
         <meta property="og:url" content="https://ridethebus.party/beerdle" />
+        <meta property="og:image" content="https://ridethebus.party/images/og/og-image.png" />
 
         {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Beerdle - Daily Ride The Bus Challenge" />
         <meta
           name="twitter:description"
-          content="Same cards for everyone. How many drinks will you take today?"
+          content="Same cards for everyone. How many drinks will you take today? Play the daily Ride The Bus challenge!"
         />
+        <meta name="twitter:image" content="https://ridethebus.party/images/og/og-image.png" />
       </Helmet>
 
       <h1 className="mb-2 text-4xl leading-tight font-bold md:text-5xl">
