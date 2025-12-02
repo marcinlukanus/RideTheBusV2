@@ -303,16 +303,22 @@ export const BeerdleGame = () => {
 
   return (
     <>
+      <h1 className="align-center mb-2 flex items-center justify-center gap-2 text-4xl leading-tight font-bold md:text-5xl">
+        <span className="text-amber-400">Beerdle</span>
+        {gameState.dayNumber && (
+          <span className="flex h-fit items-center rounded-full bg-amber-600/20 px-3 py-1 text-lg text-amber-400 md:text-xl">
+            #{gameState.dayNumber + 1}
+          </span>
+        )}
+      </h1>
+
+      <h4 className="mt-0 mb-6 text-xl italic md:text-2xl">
+        Daily Challenge - Same cards for everyone
+      </h4>
+
       {gameState.hasWon && <Confetti width={width} height={height} />}
 
       <div className="flex flex-col items-center justify-center">
-        {/* Day indicator - only show after completing the game */}
-        {gameState.hasWon && gameState.dayNumber && (
-          <div className="mb-6 rounded-full bg-amber-600/20 px-4 py-1">
-            <span className="text-amber-400">Beerdle #{gameState.dayNumber + 1}</span>
-          </div>
-        )}
-
         <div className="grid grid-cols-2 justify-items-center gap-5 lg:grid-cols-4">
           {gameState.cards.map((card, index) => (
             <Card
@@ -366,7 +372,6 @@ export const BeerdleGame = () => {
           </p>
         )}
       </div>
-
       <BeerdleWinModal
         isOpen={showWinModal}
         onClose={() => setShowWinModal(false)}
