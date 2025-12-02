@@ -309,7 +309,7 @@ export const BeerdleGame = () => {
         {/* Day indicator - only show after completing the game */}
         {gameState.hasWon && gameState.dayNumber && (
           <div className="mb-6 rounded-full bg-amber-600/20 px-4 py-1">
-            <span className="text-amber-400">Beerdle #{gameState.dayNumber}</span>
+            <span className="text-amber-400">Beerdle #{gameState.dayNumber + 1}</span>
           </div>
         )}
 
