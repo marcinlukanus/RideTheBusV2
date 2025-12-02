@@ -319,7 +319,7 @@ export const BeerdleGame = () => {
       {gameState.hasWon && <Confetti width={width} height={height} />}
 
       <div className="flex flex-col items-center justify-center">
-        <div className="grid grid-cols-2 justify-items-center gap-5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 justify-items-center gap-5 sm:grid-cols-4">
           {gameState.cards.map((card, index) => (
             <Card
               key={index}

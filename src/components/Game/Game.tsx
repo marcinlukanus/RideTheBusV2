@@ -114,7 +114,7 @@ export const Game = () => {
       {gameState.hasWon && <Confetti width={width} height={height} />}
 
       <div className="flex flex-col items-center justify-center">
-        <div className="grid grid-cols-2 justify-items-center gap-5 md:grid-cols-4">
+        <div className="xs:grid-cols-4 grid grid-cols-2 justify-items-center gap-5">
           {gameState.cards.map((card, index) => (
             <Card
               key={index}
