@@ -45,7 +45,7 @@ export const Card = ({ rank, showCardBack, suit }: CardProps) => {
   const color = suit === 'HEARTS' || suit === 'DIAMONDS' ? 'red' : 'black';
 
   return (
-    <div className="relative h-[200px] w-[144px] select-none perspective-[1500px] sm:h-[314px] sm:w-[226px]">
+    <div className="relative h-[200px] w-[144px] select-none perspective-[1500px] lg:h-[314px] lg:w-[226px]">
       <div
         className={`absolute h-full w-full rounded-[10px] transition-transform duration-600 backface-hidden transform-3d ${
           showCardBack ? 'rotate-y-180' : ''
@@ -57,7 +57,7 @@ export const Card = ({ rank, showCardBack, suit }: CardProps) => {
           }`}
         >
           <div
-            className={`text-shadow-md xs:text-4xl absolute top-2.5 left-3.5 text-5xl font-bold text-${color}`}
+            className={`text-shadow-md absolute top-2.5 left-3.5 text-4xl font-bold ${color === 'red' ? 'text-red' : 'text-black'}`}
           >
             {!showCardBack && cornerText}
           </div>
@@ -65,7 +65,7 @@ export const Card = ({ rank, showCardBack, suit }: CardProps) => {
             {!showCardBack && renderCenterSuit(suit)}
           </div>
           <div
-            className={`text-shadow-md xs:text-4xl absolute right-3.5 bottom-2.5 rotate-180 text-5xl font-bold text-${color}`}
+            className={`text-shadow-md absolute right-3.5 bottom-2.5 rotate-180 text-4xl font-bold ${color === 'red' ? 'text-red' : 'text-black'}`}
           >
             {!showCardBack && cornerText}
           </div>

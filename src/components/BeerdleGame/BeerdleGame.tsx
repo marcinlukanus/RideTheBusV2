@@ -313,7 +313,7 @@ export const BeerdleGame = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-5">
+        <div className="grid grid-cols-2 justify-items-center gap-5 lg:grid-cols-4">
           {gameState.cards.map((card, index) => (
             <Card
               key={index}
