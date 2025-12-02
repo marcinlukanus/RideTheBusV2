@@ -231,7 +231,7 @@ export const BeerdleGame = () => {
   if (alreadyCompleted && existingScore && dailySeedData) {
     const isPerfectGame = existingScore.score === 0;
     const beers = isPerfectGame ? '🏆' : '🍺'.repeat(existingScore.score);
-    const shareText = `Beerdle #${dailySeedData.day_number}\n\n${isPerfectGame ? '🏆 Stayed dry!' : beers}\n\nhttps://ridethebus.party/beerdle`;
+    const shareText = `Beerdle #${dailySeedData.day_number + 1}\n\n${isPerfectGame ? '🏆 Stayed dry!' : beers}\n\nhttps://ridethebus.party/beerdle`;
 
     return (
       <div className="flex flex-col items-center justify-center">
