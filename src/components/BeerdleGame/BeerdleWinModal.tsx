@@ -43,7 +43,7 @@ export const BeerdleWinModal = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Beerdle #${dayNumber}`,
+          title: `Beerdle #${dayNumber + 1}`,
           text: shareText,
         });
       } catch {

@@ -237,7 +237,7 @@ export const BeerdleGame = () => {
       <div className="flex flex-col items-center justify-center">
         {/* Day indicator */}
         <div className="mb-6 rounded-full bg-amber-600/20 px-4 py-1">
-          <span className="text-amber-400">Beerdle #{dailySeedData.day_number}</span>
+          <span className="text-amber-400">Beerdle #{dailySeedData.day_number + 1}</span>
         </div>
 
         <div className="mb-6 rounded-xl bg-gray-800 p-8 text-center">
@@ -309,11 +309,11 @@ export const BeerdleGame = () => {
         {/* Day indicator - only show after completing the game */}
         {gameState.hasWon && gameState.dayNumber && (
           <div className="mb-6 rounded-full bg-amber-600/20 px-4 py-1">
-            <span className="text-amber-400">Beerdle #{gameState.dayNumber}</span>
+            <span className="text-amber-400">Beerdle #{gameState.dayNumber + 1}</span>
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-5">
+        <div className="grid grid-cols-2 justify-items-center gap-5 lg:grid-cols-4">
           {gameState.cards.map((card, index) => (
             <Card
               key={index}

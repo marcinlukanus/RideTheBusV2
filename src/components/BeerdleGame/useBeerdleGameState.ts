@@ -208,7 +208,7 @@ export const useBeerdleGameState = () => {
 
     const beers = gameState.attempts === 0 ? '🏆 Stayed dry!' : '🍺'.repeat(gameState.attempts);
 
-    return `Beerdle #${gameState.dayNumber}\n\n${beers}\n\nhttps://ridethebus.party/beerdle`;
+    return `Beerdle #${gameState.dayNumber + 1}\n\n${beers}\n\nhttps://ridethebus.party/beerdle`;
   }, [gameState.hasWon, gameState.dayNumber, gameState.attempts]);
 
   return {
