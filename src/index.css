@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@source not "../AGENTS.md";
 
 @theme {
   --breakpoint-xs: 25rem;
