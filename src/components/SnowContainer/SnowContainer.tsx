@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Snowfall } from 'react-snowfall';
 
 export const SnowContainer = () => {
@@ -24,5 +25,10 @@ export const SnowContainer = () => {
 
   if (!isEnabled) return null;
 
-  return <Snowfall snowflakeCount={400} speed={[0.5, 3]} wind={[-0.5, 2]} radius={[0.5, 3]} />;
+  return createPortal(
+    <div className="pointer-events-none fixed inset-0 z-50">
+      <Snowfall snowflakeCount={400} speed={[0.5, 3]} wind={[-0.5, 2]} radius={[0.5, 3]} />
+    </div>,
+    document.body,
+  );
 };

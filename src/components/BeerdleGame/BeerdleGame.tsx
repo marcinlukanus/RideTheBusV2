@@ -8,7 +8,8 @@ import {
   useBeerdleGameState,
 } from './useBeerdleGameState';
 import Confetti from 'react-confetti';
-import { useWindowSize } from '../../helpers/hooks/useWindowSize';
+import { createPortal } from 'react-dom';
+import { useDocumentSize } from '../../helpers/hooks/useDocumentSize';
 import { useAuth } from '../../contexts/AuthContext';
 import { getDailySeed, DailySeed } from '../../api/getDailySeed';
 import { postBeerdleScore } from '../../api/postBeerdleScore';
@@ -20,8 +21,8 @@ import {
 import { BeerdleWinModal } from './BeerdleWinModal';
 
 export const BeerdleGame = () => {
-  const { width, height } = useWindowSize();
   const { user } = useAuth();
+  const { width, height } = useDocumentSize();
 
   const {
     gameState,
@@ -316,7 +317,15 @@ export const BeerdleGame = () => {
         Daily Challenge - Same cards for everyone
       </h4>
 
-      {gameState.hasWon && <Confetti width={width} height={height} />}
+      {gameState.hasWon &&
+        createPortal(
+          <Confetti
+            width={width}
+            height={height}
+            style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 9999 }}
+          />,
+          document.body,
+        )}
 
       <div className="flex flex-col items-center justify-center">
         <div className="grid grid-cols-2 justify-items-center gap-5 sm:grid-cols-4">
