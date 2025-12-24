@@ -3,7 +3,8 @@ import { Card } from '../Card/Card';
 import { usePartyGameState } from './usePartyGameState';
 import supabase from '../../utils/supabase';
 import Confetti from 'react-confetti';
-import { useWindowSize } from '../../helpers/hooks/useWindowSize';
+import { createPortal } from 'react-dom';
+import { useDocumentSize } from '../../helpers/hooks/useDocumentSize';
 import {
   HigherLowerOrSame,
   InsideOutsideOrSame,
@@ -35,7 +36,7 @@ type RealtimePlayerPayload = RealtimePostgresChangesPayload<
 };
 
 export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
-  const { width, height } = useWindowSize();
+  const { width, height } = useDocumentSize();
   const {
     gameState,
     playersState,
@@ -256,7 +257,15 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
             {winner.timesRedrawn === 1 ? 'redraw' : 'redraws'}! 🎉
           </p>
         </div>
-        {isCurrentPlayerWinner && <Confetti width={width} height={height} />}
+        {isCurrentPlayerWinner &&
+          createPortal(
+            <Confetti
+              width={width}
+              height={height}
+              style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 9999 }}
+            />,
+            document.body,
+          )}
       </>
     );
   };

@@ -8,7 +8,8 @@ import {
   useGameState,
 } from './useGameState';
 import Confetti from 'react-confetti';
-import { useWindowSize } from '../../helpers/hooks/useWindowSize';
+import { createPortal } from 'react-dom';
+import { useDocumentSize } from '../../helpers/hooks/useDocumentSize';
 import { postScore } from '../../api/postScore';
 // import { BestScores } from '../BestScores/BestScores';
 import { LongestRides } from '../LongestRides/LongestRides';
@@ -16,8 +17,8 @@ import { postCardCounts } from '../../api/postCardCounts';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const Game = () => {
-  const { width, height } = useWindowSize();
   const { user } = useAuth();
+  const { width, height } = useDocumentSize();
 
   const { gameState, dispatch, finalRound, firstRound, secondRound, thirdRound } = useGameState();
 
@@ -111,7 +112,15 @@ export const Game = () => {
 
   return (
     <>
-      {gameState.hasWon && <Confetti width={width} height={height} />}
+      {gameState.hasWon &&
+        createPortal(
+          <Confetti
+            width={width}
+            height={height}
+            style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 9999 }}
+          />,
+          document.body,
+        )}
 
       <div className="flex flex-col items-center justify-center">
         <div className="xs:grid-cols-4 grid grid-cols-2 justify-items-center gap-5">

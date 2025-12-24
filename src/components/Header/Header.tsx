@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
+import { SnowToggle } from '../SnowToggle/SnowToggle';
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -39,6 +40,7 @@ export const Header = () => {
 
           {/* Navigation Links */}
           <nav className="flex items-center gap-4">
+            <SnowToggle />
             <Link
               to="/beerdle"
               className="rounded-md px-3 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-400/10 hover:text-amber-300"
@@ -78,7 +80,7 @@ export const Header = () => {
                 </button>
 
                 {isMenuOpen && (
-                  <div className="ring-opacity-5 absolute right-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black dark:bg-gray-800">
+                  <div className="absolute right-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black/5 dark:bg-gray-800">
                     <div className="py-1">
                       <Link
                         to={`/${profile?.username || user.user_metadata.display_name}/profile`}
