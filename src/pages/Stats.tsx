@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { getCardCounts } from '../api/getCardCounts';
 import { CardCountBarChart } from '../components/CardCountBarChart/CardCountBarChart';
 import { CardCountTable } from '../components/CardCountTable/CardCountTable';
+import { queryKeys } from '../lib/queryKeys';
 
 export type CardCount = {
   card_rank: string;
@@ -14,9 +16,13 @@ const RANK_ORDER = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K',
 const SUIT_ORDER = ['CLUBS', 'DIAMONDS', 'SPADES', 'HEARTS'];
 
 export const Stats = (): JSX.Element => {
-  const [cardCounts, setCardCounts] = useState<CardCount[]>([]);
   const [sortCriteria, setSortCriteria] = useState<'rank' | 'suit' | 'count'>('rank');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const { data: cardCounts = [] } = useQuery({
+    queryKey: queryKeys.cardCounts,
+    queryFn: getCardCounts,
+  });
 
   const sortCardCounts = (counts: CardCount[]) => {
     return counts.sort((a, b) => {
@@ -51,15 +57,6 @@ export const Stats = (): JSX.Element => {
       name: `${cardCount.card_rank} of ${cardCount.card_suit}`,
     };
   });
-
-  useEffect(() => {
-    const fetchCardCounts = async () => {
-      const counts = await getCardCounts();
-      setCardCounts(sortCardCounts(counts));
-    };
-
-    fetchCardCounts();
-  }, []);
 
   return (
     <div className="p-4">

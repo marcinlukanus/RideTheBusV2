@@ -11,14 +11,13 @@ import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
 import { useDocumentSize } from '../../helpers/hooks/useDocumentSize';
 import { useAuth } from '../../contexts/AuthContext';
-import { getDailySeed, DailySeed } from '../../api/getDailySeed';
+import { getDailySeed } from '../../api/getDailySeed';
 import { postBeerdleScore } from '../../api/postBeerdleScore';
-import {
-  getTodayBeerdleScore,
-  getUserBeerdleStats,
-  BeerdleScore,
-} from '../../api/getUserBeerdleStats';
+import { getTodayBeerdleScore, getUserBeerdleStats } from '../../api/getUserBeerdleStats';
 import { BeerdleWinModal } from './BeerdleWinModal';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryClient } from '../../lib/queryClient';
+import { queryKeys } from '../../lib/queryKeys';
 
 export const BeerdleGame = () => {
   const { user } = useAuth();
@@ -38,94 +37,75 @@ export const BeerdleGame = () => {
   const [showWinModal, setShowWinModal] = useState(false);
   const [isNewBest, setIsNewBest] = useState(false);
   const [previousBest, setPreviousBest] = useState<number | null>(null);
-  const [userBestScore, setUserBestScore] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
-  const [existingScore, setExistingScore] = useState<BeerdleScore | null>(null);
-  const [dailySeedData, setDailySeedData] = useState<DailySeed | null>(null);
 
-  // Fetch daily seed and check for existing score on mount
-  useEffect(() => {
-    const fetchSeedAndCheckScore = async () => {
-      try {
-        const seedData = await getDailySeed();
-        setDailySeedData(seedData);
+  const dailySeedQuery = useQuery({
+    queryKey: queryKeys.dailySeed,
+    queryFn: getDailySeed,
+    staleTime: Infinity,
+  });
 
-        // Check if logged-in user has already completed today's Beerdle
-        if (user?.id) {
-          // Fetch user's Beerdle stats to get their best score
-          try {
-            const stats = await getUserBeerdleStats(user.id);
-            setUserBestScore(stats.bestScore);
-          } catch {
-            // Stats fetch failed, continue without best score
-            console.log('Could not fetch user Beerdle stats');
-          }
+  const beerdleStatsQuery = useQuery({
+    queryKey: queryKeys.userBeerdleStats(user?.id ?? ''),
+    queryFn: () => getUserBeerdleStats(user!.id),
+    enabled: !!user?.id,
+  });
 
-          const todayScore = await getTodayBeerdleScore(user.id);
-          if (todayScore) {
-            setAlreadyCompleted(true);
-            setExistingScore(todayScore);
-            return; // Don't initialize the game if already completed
-          }
-        }
+  const todayScoreQuery = useQuery({
+    queryKey: queryKeys.todayBeerdleScore(user?.id ?? ''),
+    queryFn: () => getTodayBeerdleScore(user!.id),
+    enabled: !!user?.id,
+  });
 
-        setSeed(seedData.seed, seedData.day_number, seedData.game_date);
-      } catch (err) {
-        setError("Failed to load today's game. Please refresh the page.");
-        console.error('Failed to fetch daily seed:', err);
+  const dailySeedData = dailySeedQuery.data ?? null;
+  const alreadyCompleted = !!todayScoreQuery.data;
+  const existingScore = todayScoreQuery.data ?? null;
+  const userBestScore = beerdleStatsQuery.data?.bestScore ?? null;
+  const error = dailySeedQuery.error ? "Failed to load today's game. Please refresh the page." : null;
+
+  const postBeerdleMutation = useMutation({
+    mutationFn: ({ userId, date, score }: { userId: string; date: string; score: number }) =>
+      postBeerdleScore(userId, date, score),
+    onSuccess: (_, { score }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.todayBeerdleScore(user!.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userBeerdleStats(user!.id) });
+      if (userBestScore !== null) {
+        setIsNewBest(score < userBestScore);
+        setPreviousBest(userBestScore);
       }
-    };
+      setShowWinModal(true);
+    },
+    onError: () => setShowWinModal(true),
+  });
 
-    fetchSeedAndCheckScore();
-  }, [setSeed, user?.id]);
-
-  // Save score when game is won (only if not already completed)
+  // Initialize seed once data is ready
   useEffect(() => {
-    const saveScore = async () => {
-      if (
-        gameState.isGameOver &&
-        gameState.hasWon &&
-        user?.id &&
-        gameState.gameDate &&
-        !alreadyCompleted
-      ) {
-        try {
-          await postBeerdleScore(user.id, gameState.gameDate, gameState.attempts);
-          setAlreadyCompleted(true);
-          setExistingScore({
-            id: 0,
-            user_id: user.id,
-            game_date: gameState.gameDate,
-            score: gameState.attempts,
-            created_at: new Date().toISOString(),
-          });
+    if (!dailySeedQuery.data) return;
+    if (user?.id && todayScoreQuery.isPending) return;
+    if (alreadyCompleted) return;
+    setSeed(dailySeedQuery.data.seed, dailySeedQuery.data.day_number, dailySeedQuery.data.game_date);
+  }, [dailySeedQuery.data, todayScoreQuery.isPending, alreadyCompleted, user?.id, setSeed]);
 
-          // Determine if this is a new best score
-          // A lower score (fewer attempts) is better
-          if (userBestScore !== null) {
-            const isNewBestScore = gameState.attempts < userBestScore;
-            setIsNewBest(isNewBestScore);
-            setPreviousBest(userBestScore);
-          } else {
-            // First game ever - this is their first (and best) score
-            setIsNewBest(false);
-            setPreviousBest(null);
-          }
+  // Save score when game is won
+  useEffect(() => {
+    if (
+      !gameState.isGameOver ||
+      !gameState.hasWon ||
+      alreadyCompleted ||
+      postBeerdleMutation.isPending ||
+      postBeerdleMutation.isSuccess
+    )
+      return;
 
-          setShowWinModal(true);
-        } catch (err) {
-          console.error('Failed to save score:', err);
-          // Still show modal even if save fails
-          setShowWinModal(true);
-        }
-      } else if (gameState.isGameOver && gameState.hasWon && !user) {
-        // Show modal for non-logged-in users too
-        setShowWinModal(true);
-      }
-    };
-
-    saveScore();
+    if (user?.id && gameState.gameDate) {
+      postBeerdleMutation.mutate({
+        userId: user.id,
+        date: gameState.gameDate,
+        score: gameState.attempts,
+      });
+    } else if (!user) {
+      // Show modal for non-logged-in users
+      setShowWinModal(true);
+    }
   }, [
     gameState.isGameOver,
     gameState.hasWon,
@@ -133,7 +113,8 @@ export const BeerdleGame = () => {
     gameState.gameDate,
     user,
     alreadyCompleted,
-    userBestScore,
+    postBeerdleMutation.isPending,
+    postBeerdleMutation.isSuccess,
   ]);
 
   const renderButtons = () => {
@@ -219,7 +200,7 @@ export const BeerdleGame = () => {
     );
   }
 
-  if (gameState.isLoading && !alreadyCompleted) {
+  if ((dailySeedQuery.isLoading || (!!user?.id && todayScoreQuery.isPending)) && !alreadyCompleted) {
     return (
       <div className="flex flex-col items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent"></div>
