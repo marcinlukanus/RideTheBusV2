@@ -11,12 +11,10 @@ import { SignUp } from './pages/SignUp';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Profile } from './pages/Profile.tsx';
-import { HelmetProvider } from 'react-helmet-async';
 
 createRoot(document.getElementById('root')!).render(
-  <HelmetProvider>
-    <BrowserRouter>
-      <AuthProvider>
+  <BrowserRouter>
+    <AuthProvider>
         <Routes>
           {/* The Layout route will wrap all the nested routes */}
           <Route element={<Layout />}>
@@ -47,6 +45,5 @@ createRoot(document.getElementById('root')!).render(
           </Route>
         </Routes>
       </AuthProvider>
-    </BrowserRouter>
-  </HelmetProvider>,
+    </BrowserRouter>,
 );
