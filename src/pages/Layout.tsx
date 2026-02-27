@@ -2,7 +2,6 @@ import { Outlet } from 'react-router';
 import { Helmet } from 'react-helmet-async';
 import { Footer } from '../components/Footer/Footer';
 import { Header } from '../components/Header/Header';
-import { SnowContainer } from '../components/SnowContainer/SnowContainer';
 
 export const Layout = () => {
   return (
@@ -45,8 +44,7 @@ export const Layout = () => {
         <meta name="theme-color" content="#111827" />
       </Helmet>
       <Header />
-      <SnowContainer />
-      <main className="mx-auto max-w-6xl flex-grow p-8 pt-16 text-center">
+<main className="mx-auto max-w-6xl flex-grow p-8 pt-16 text-center">
         <Outlet />
       </main>
       <Footer />
