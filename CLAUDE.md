@@ -24,6 +24,9 @@ src/
 ```bash
 npm run dev          # dev server → http://localhost:5173
 npx tsc --noEmit     # type-check (run before every commit)
+npm test             # run all tests once
+npm run test:watch   # interactive watch mode
+npm run test:coverage  # coverage report (requires Node 22+)
 ```
 
 ## Tailwind v4 custom tokens
@@ -73,6 +76,41 @@ Dark surface container (`bg-surface-raised` + border + shadow). Accepts `classNa
 Buttons in `Game.tsx` tied to game state (Red/Black, Higher/Lower/Same, Inside/Outside, suits)
 intentionally do **not** use the Button component. Their colors reflect game rules, not brand
 theme, and should stay independent.
+
+## Testing
+
+- **Framework:** Vitest + @testing-library/react + MSW (mock service worker)
+- **Coverage:** `@vitest/coverage-v8` — requires Node 22+ (`node:inspector/promises`)
+- **Config:** `vitest.config.ts` at project root — jsdom environment, setupFiles at `src/test/setup.ts`
+- **Pure logic tests** (no React/DOM): add `// @vitest-environment node` at top of file to skip jsdom
+- **MSW handlers** live in `src/test/mocks/` — server auto-starts/resets/closes around each test suite
+
+### What's tested
+- `src/utils/gameValidation.ts` — 4 pure validation functions, 100% coverage
+- `src/components/Game/useGameState.ts` — `gameReducer` + `initialGameState` exported for direct testing
+
+### Exported for testing (from `useGameState.ts`)
+```ts
+export type GameState
+export type GameAction
+export const initialGameState
+export const gameReducer
+```
+
+## CI/CD
+
+GitHub Actions at `.github/workflows/ci.yml` — triggers on push/PR to `main`.
+Three parallel jobs, all use Node version from `.nvmrc`:
+
+| Job | Command |
+|-----|---------|
+| Test | `npm test` |
+| Typecheck | `npx tsc --noEmit` |
+| Lint | `npm run lint` |
+
+**Node version:** 22 LTS (set in `.nvmrc`). Must use Node 22+ locally — v8 coverage and `catch {}` syntax require it.
+
+**ESLint ignores:** `dist`, `coverage`, `.claude` — the `.claude/` worktree directory must stay ignored or it poisons lint with hundreds of false errors.
 
 ## Git & PR workflow
 1. `npx tsc --noEmit` — must be clean
