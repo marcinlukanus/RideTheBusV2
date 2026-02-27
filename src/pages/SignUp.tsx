@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useState, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import supabase from '../utils/supabase';
 import type { Database } from '../types/database.types';
 import { uploadAvatar } from '../api/uploadAvatar';
 import { Button } from '../components/ui/Button';
-import { useAuth } from '../contexts/AuthContext';
 
 type Profile = Database['public']['Tables']['profiles']['Insert'];
 
@@ -29,13 +29,6 @@ export const SignUp = () => {
   const [avatarPreview, setAvatarPreview] = useState('/images/default-avatar.png');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (!authLoading && user) {
-      navigate({ to: '/' });
-    }
-  }, [user, authLoading, navigate]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -94,7 +87,7 @@ export const SignUp = () => {
       if (profileError) throw profileError;
 
       // User is already logged in thanks to Supabase's auto-login after signup
-      navigate({ to: '/' });
+      navigate('/');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
@@ -104,6 +97,11 @@ export const SignUp = () => {
 
   return (
     <div className="flex min-h-screen items-start justify-center px-4 pt-20 sm:px-6 lg:px-8">
+      <Helmet prioritizeSeoTags>
+        <title>Sign Up – Ride The Bus</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://ridethebus.party/sign-up" />
+      </Helmet>
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-2xl dark:bg-gray-800">
         <div className="flex flex-col items-center">
           <div className="group relative mb-4 h-32 w-32 cursor-pointer" onClick={handleAvatarClick}>

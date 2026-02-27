@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate, useParams } from 'react-router-dom';
 import supabase from '../../utils/supabase';
 import { Button } from '../ui/Button';
 import { Panel } from '../ui/Panel';
@@ -14,7 +14,7 @@ type GameState = {
 
 export const JoinRoom = () => {
   const navigate = useNavigate();
-  const { roomId: roomCode } = useParams({ strict: false }) as { roomId?: string }; // This is actually the room_code
+  const { roomId: roomCode } = useParams(); // This is actually the room_code
   const [nickname, setNickname] = useState('');
   const [error, setError] = useState('');
   const [isJoining, setIsJoining] = useState(false);
@@ -77,7 +77,7 @@ export const JoinRoom = () => {
       if (joinError) throw joinError;
 
       // Navigate to game using the friendly room code
-      navigate({ to: '/party-bus/$roomCode', params: { roomCode: roomCode! } });
+      navigate(`/party-bus/${roomCode}`);
     } catch (err) {
       console.error('Error joining room:', err);
       setError('Failed to join room. Please try again.');

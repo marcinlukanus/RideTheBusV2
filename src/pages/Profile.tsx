@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProfileByUsername } from '../api/getProfileByUsername';
 import { getUserScores } from '../api/getUserScores';
@@ -8,6 +8,7 @@ import { Database } from '../types/database.types';
 import { useAuth } from '../contexts/AuthContext';
 import supabase from '../utils/supabase';
 import { uploadAvatar } from '../api/uploadAvatar';
+import { Helmet } from 'react-helmet-async';
 import { queryClient } from '../lib/queryClient';
 import { queryKeys } from '../lib/queryKeys';
 
@@ -15,7 +16,7 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 type Score = Database['public']['Tables']['scores']['Row'];
 
 export const Profile = () => {
-  const { username } = useParams({ strict: false }) as { username: string };
+  const { username } = useParams<{ username: string }>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ export const Profile = () => {
   }
 
   if (error) {
-    navigate({ to: '/' });
+    navigate('/');
   }
 
   if (!profile) {
@@ -97,6 +98,17 @@ export const Profile = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Helmet prioritizeSeoTags>
+        <title>{profile.username} – Ride The Bus Profile</title>
+        <meta
+          name="description"
+          content={`See ${profile.username}'s Ride The Bus scores and avatar.`}
+        />
+        <link
+          rel="canonical"
+          href={`https://ridethebus.party/${encodeURIComponent(profile.username)}/profile`}
+        />
+      </Helmet>
       <div className="mb-8 flex flex-col items-center">
         <div
           className={`relative mb-4 h-32 w-32 ${isOwnProfile ? 'group cursor-pointer' : ''}`}
