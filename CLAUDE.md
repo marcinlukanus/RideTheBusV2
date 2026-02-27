@@ -1,9 +1,9 @@
 # RideTheBus V2 — Claude Reference
 
 ## Stack
-- React 18.3 + TypeScript + Vite
+- React 19 + TypeScript + Vite
 - Tailwind CSS v4 (`@tailwindcss/vite` plugin — no `tailwind.config.js`)
-- React Router v7, Supabase, Radix UI, Recharts, React Helmet Async
+- React Router v7, Supabase, Radix UI, Recharts
 - TanStack Query v5 (data fetching / caching layer)
 
 ## Project structure

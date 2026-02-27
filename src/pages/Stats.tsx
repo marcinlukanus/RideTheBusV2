@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Helmet } from 'react-helmet-async';
 import { getCardCounts } from '../api/getCardCounts';
 import { CardCountBarChart } from '../components/CardCountBarChart/CardCountBarChart';
 import { CardCountTable } from '../components/CardCountTable/CardCountTable';
@@ -60,14 +59,12 @@ export const Stats = (): JSX.Element => {
 
   return (
     <div className="p-4">
-      <Helmet prioritizeSeoTags>
-        <title>Ride The Bus Card Counts</title>
-        <link rel="canonical" href="https://ridethebus.party/stats" />
-        <meta
-          name="description"
-          content="Explore card distribution and stats for Ride The Bus. See counts and probabilities to improve your strategy."
-        />
-      </Helmet>
+      <title>Ride The Bus Card Counts</title>
+      <link rel="canonical" href="https://ridethebus.party/stats" />
+      <meta
+        name="description"
+        content="Explore card distribution and stats for Ride The Bus. See counts and probabilities to improve your strategy."
+      />
       <h1 className="mb-4 text-2xl font-bold">Card Counts</h1>
 
       <CardCountBarChart cardCounts={sortedCardCounts} />
