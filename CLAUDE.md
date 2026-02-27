@@ -4,6 +4,7 @@
 - React 18.3 + TypeScript + Vite
 - Tailwind CSS v4 (`@tailwindcss/vite` plugin — no `tailwind.config.js`)
 - React Router v7, Supabase, Radix UI, Recharts, React Helmet Async
+- TanStack Query v5 (data fetching / caching layer)
 
 ## Project structure
 ```
@@ -13,6 +14,7 @@ src/
   pages/             # Layout, Login, SignUp, PartyBus, Beerdle, Stats, Profile
   contexts/          # AuthContext
   api/               # Supabase API helpers
+  lib/               # shared singletons: queryClient.ts, queryKeys.ts
   utils/             # utility functions
   types/             # TypeScript types
   index.css          # global styles + @theme token definitions
@@ -77,6 +79,14 @@ theme, and should stay independent.
 2. Stage specific files by name (never `git add -A`)
 3. Commit message: imperative title + blank line + body explaining *why*
 4. Push branch → `gh pr create --draft` with a test plan checklist in the body
+
+## TanStack Query conventions
+- `QueryClient` singleton lives in `src/lib/queryClient.ts` (staleTime 5 min, retry 1)
+- All query keys live in `src/lib/queryKeys.ts` — always use these for queries **and** invalidations
+- `dailySeed` query uses `staleTime: Infinity` (seed never changes mid-day)
+- **Intentionally NOT migrated:** `AuthContext` (realtime auth subscription), `PartyBus` (realtime
+  Supabase channel), `Login`/`SignUp` (fire-and-forget mutations, no caching value)
+- No devtools installed
 
 ## Claude-specific notes
 - **Worktrees do not inherit `.env`** — if you see `supabaseUrl is required`, copy it over:
