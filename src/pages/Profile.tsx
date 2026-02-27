@@ -1,66 +1,65 @@
-import { useEffect, useState, useRef } from 'react';
+import { useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProfileByUsername } from '../api/getProfileByUsername';
 import { getUserScores } from '../api/getUserScores';
-import { getUserBeerdleStats, BeerdleStats } from '../api/getUserBeerdleStats';
+import { getUserBeerdleStats } from '../api/getUserBeerdleStats';
 import { Database } from '../types/database.types';
 import { useAuth } from '../contexts/AuthContext';
 import supabase from '../utils/supabase';
 import { uploadAvatar } from '../api/uploadAvatar';
+import { queryClient } from '../lib/queryClient';
+import { queryKeys } from '../lib/queryKeys';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Score = Database['public']['Tables']['scores']['Row'];
 
 export const Profile = () => {
   const { username } = useParams<{ username: string }>();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [scores, setScores] = useState<Score[]>([]);
-  const [beerdleStats, setBeerdleStats] = useState<BeerdleStats | null>(null);
-  const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const {
+    data: profile,
+    isLoading,
+    error,
+  } = useQuery<Profile>({
+    queryKey: queryKeys.profile(username!),
+    queryFn: () => getProfileByUsername(username!),
+    enabled: !!username,
+  });
+
+  const { data: scores = [] } = useQuery<Score[]>({
+    queryKey: queryKeys.userScores(profile?.id ?? ''),
+    queryFn: () => getUserScores(profile!.id),
+    enabled: !!profile?.id,
+    select: (data) =>
+      [...data].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      ),
+  });
+
+  const { data: beerdleStats = null } = useQuery({
+    queryKey: queryKeys.userBeerdleStats(profile?.id ?? ''),
+    queryFn: () => getUserBeerdleStats(profile!.id),
+    enabled: !!profile?.id,
+  });
+
+  const avatarMutation = useMutation({
+    mutationFn: async ({ file, profileId }: { file: File; profileId: string }) => {
+      const { publicUrl } = await uploadAvatar(file, profileId);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', profileId);
+      if (error) throw error;
+      return publicUrl;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.profile(username!) }),
+  });
+
   const isOwnProfile = user?.id === profile?.id;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!username) {
-          throw new Error(
-            "What is this, a profile page without a username? That's like a horse without a... actually, never mind.",
-          );
-        }
-
-        const profileData = await getProfileByUsername(username);
-        setProfile(profileData);
-
-        const userScores = await getUserScores(profileData.id);
-        setScores(
-          userScores.sort(
-            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-          ),
-        );
-
-        // Fetch Beerdle stats
-        try {
-          const beerdleData = await getUserBeerdleStats(profileData.id);
-          setBeerdleStats(beerdleData);
-        } catch {
-          // Beerdle stats are optional, don't fail the whole page
-          console.log('Could not fetch Beerdle stats');
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [username]);
 
   const handleAvatarClick = () => {
     if (isOwnProfile && fileInputRef.current) {
@@ -71,29 +70,10 @@ export const Profile = () => {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
-
-    setUpdating(true);
-    try {
-      const { publicUrl } = await uploadAvatar(file, profile.id);
-
-      // Update the profile with new avatar URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', profile.id);
-
-      if (updateError) throw updateError;
-
-      // Update local state
-      setProfile((prev) => (prev ? { ...prev, avatar_url: publicUrl } : null));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update avatar');
-    } finally {
-      setUpdating(false);
-    }
+    avatarMutation.mutate({ file, profileId: profile.id });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-xl">Loading...</div>
@@ -102,7 +82,6 @@ export const Profile = () => {
   }
 
   if (error) {
-    // Redirect to home page
     navigate('/');
   }
 
@@ -141,7 +120,7 @@ export const Profile = () => {
             <>
               <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black opacity-0 transition-opacity group-hover:opacity-100">
                 <span className="text-sm text-white">
-                  {updating ? 'Updating...' : 'Change Avatar'}
+                  {avatarMutation.isPending ? 'Updating...' : 'Change Avatar'}
                 </span>
               </div>
               <input
@@ -150,7 +129,7 @@ export const Profile = () => {
                 className="hidden"
                 accept="image/*"
                 onChange={handleAvatarChange}
-                disabled={updating}
+                disabled={avatarMutation.isPending}
               />
             </>
           )}

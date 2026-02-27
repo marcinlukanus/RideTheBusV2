@@ -3,7 +3,7 @@ import { getDailyWorstScores } from '../../api/getDailyWorstScores';
 import { Panel } from '../ui/Panel';
 
 export const LongestRides = () => {
-  const [worstScores, setWorstScores] = useState<any[]>([]);
+  const [worstScores, setWorstScores] = useState<{ score: number }[]>([]);
 
   useEffect(() => {
     const fetchWorstScores = async () => {

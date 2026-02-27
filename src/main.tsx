@@ -11,10 +11,13 @@ import { SignUp } from './pages/SignUp';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Profile } from './pages/Profile.tsx';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 
 createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <AuthProvider>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           {/* The Layout route will wrap all the nested routes */}
           <Route element={<Layout />}>
@@ -45,5 +48,6 @@ createRoot(document.getElementById('root')!).render(
           </Route>
         </Routes>
       </AuthProvider>
-    </BrowserRouter>,
+    </BrowserRouter>
+  </QueryClientProvider>,
 );

@@ -183,7 +183,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
 
   const renderPlayerGame = (playerState: PlayerState) => (
     <div className="mb-8 rounded-lg bg-gray-800 p-6">
-      <h3 className="mb-4 text-xl font-bold">{playerState.nickname}'s Game</h3>
+      <h3 className="mb-4 text-xl font-bold">{playerState.nickname}&apos;s Game</h3>
       <div className="flex flex-wrap justify-center gap-5">
         {playerState.cards.map((card: GameCard, index: number) => (
           <Card
