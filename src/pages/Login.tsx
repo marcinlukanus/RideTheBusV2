@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
 import { Button } from '../components/ui/Button';
@@ -32,9 +33,11 @@ export const Login = () => {
 
   return (
     <div className="flex min-h-screen items-start justify-center px-4 pt-20 sm:px-6 lg:px-8">
-      <title>Login – Ride The Bus</title>
-      <meta name="robots" content="noindex, nofollow" />
-      <link rel="canonical" href="https://ridethebus.party/login" />
+      <Helmet prioritizeSeoTags>
+        <title>Login – Ride The Bus</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://ridethebus.party/login" />
+      </Helmet>
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-2xl dark:bg-gray-800">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
