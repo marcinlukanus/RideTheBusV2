@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
-import { SnowToggle } from '../SnowToggle/SnowToggle';
 
 export const Header = () => {
   const { user, signOut } = useAuth();
@@ -40,8 +39,7 @@ export const Header = () => {
 
           {/* Navigation Links */}
           <nav className="flex items-center gap-4">
-            <SnowToggle />
-            <Link
+<Link
               to="/beerdle"
               className="rounded-md px-3 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-400/10 hover:text-amber-300"
             >

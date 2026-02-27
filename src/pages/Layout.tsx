@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router';
 import { Footer } from '../components/Footer/Footer';
 import { Header } from '../components/Header/Header';
-import { SnowContainer } from '../components/SnowContainer/SnowContainer';
 
 export const Layout = () => {
   return (
@@ -42,8 +41,7 @@ export const Layout = () => {
       {/* PWA/Theme */}
       <meta name="theme-color" content="#111827" />
       <Header />
-      <SnowContainer />
-      <main className="mx-auto max-w-6xl flex-grow p-8 pt-16 text-center">
+<main className="mx-auto max-w-6xl flex-grow p-8 pt-16 text-center">
         <Outlet />
       </main>
       <Footer />
