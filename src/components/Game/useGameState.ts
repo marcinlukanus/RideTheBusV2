@@ -1,4 +1,10 @@
 import { useReducer } from 'react';
+import {
+  validateFirstRound,
+  validateSecondRound,
+  validateThirdRound,
+  validateFinalRound,
+} from '../../utils/gameValidation';
 
 type Suit = 'HEARTS' | 'DIAMONDS' | 'CLUBS' | 'SPADES';
 export type RedOrBlack = 'red' | 'black';
@@ -38,7 +44,7 @@ const generateCards = () =>
 
 export const drawCards = (amountToDraw: number): Card[] => {
   const deck = generateCards();
-  let selectedCards: Card[] = [];
+  const selectedCards: Card[] = [];
 
   for (let i = 0; i < amountToDraw; i++) {
     const randomIndex = Math.floor(Math.random() * deck.length);
@@ -49,20 +55,30 @@ export const drawCards = (amountToDraw: number): Card[] => {
   return selectedCards;
 };
 
-const reducer = (
-  state: {
-    cards: Card[];
-    currentRound: number;
-    hasWon: boolean;
-    isGameOver: boolean;
-    timesRedrawn: number;
-  },
-  action:
-    | { type: 'DRAW_CARDS'; amountToDraw: number; resetScore: boolean }
-    | { type: 'ADVANCE_ROUND'; cardToFlip: number }
-    | { type: 'GAME_OVER'; cardToFlip: number }
-    | { type: 'WIN_GAME' },
-) => {
+export type GameState = {
+  cards: Card[];
+  currentRound: number;
+  hasWon: boolean;
+  isGameOver: boolean;
+  timesRedrawn: number;
+};
+
+export type GameAction =
+  | { type: 'DRAW_CARDS'; amountToDraw: number; resetScore: boolean }
+  | { type: 'ADVANCE_ROUND'; cardToFlip: number }
+  | { type: 'GAME_OVER'; cardToFlip: number }
+  | { type: 'WIN_GAME' };
+
+export const initialGameState: GameState = {
+  cards: [],
+  currentRound: 1,
+  hasWon: false,
+  isGameOver: false,
+  // Initial draw of cards increments timesRedrawn by 1, so we start at -1
+  timesRedrawn: -1,
+};
+
+export const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'DRAW_CARDS':
       return {
@@ -103,21 +119,10 @@ const reducer = (
 };
 
 export const useGameState = () => {
-  const [gameState, dispatch] = useReducer(reducer, {
-    cards: [],
-    currentRound: 1,
-    hasWon: false,
-    isGameOver: false,
-    // Initial draw of cards increments timesRedrawn by 1, so we start at -1
-    timesRedrawn: -1,
-  });
+  const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
 
   const firstRound = (color: RedOrBlack) => {
-    const card = gameState.cards[0];
-    const isRed = card.suit === 'HEARTS' || card.suit === 'DIAMONDS';
-    const isCorrect = isRed === (color === 'red');
-
-    if (isCorrect) {
+    if (validateFirstRound(gameState.cards[0], color)) {
       dispatch({ type: 'ADVANCE_ROUND', cardToFlip: 0 });
     } else {
       dispatch({ type: 'GAME_OVER', cardToFlip: 0 });
@@ -125,19 +130,7 @@ export const useGameState = () => {
   };
 
   const secondRound = (guess: HigherLowerOrSame) => {
-    const firstCard = gameState.cards[0];
-    const secondCard = gameState.cards[1];
-
-    const isHigher = secondCard.values.numericValue > firstCard.values.numericValue;
-
-    const isLower = secondCard.values.numericValue < firstCard.values.numericValue;
-
-    const isCorrect =
-      (isHigher && guess === 'higher') ||
-      (isLower && guess === 'lower') ||
-      (firstCard.values.numericValue === secondCard.values.numericValue && guess === 'same');
-
-    if (isCorrect) {
+    if (validateSecondRound(gameState.cards[0], gameState.cards[1], guess)) {
       dispatch({ type: 'ADVANCE_ROUND', cardToFlip: 1 });
     } else {
       dispatch({ type: 'GAME_OVER', cardToFlip: 1 });
@@ -145,32 +138,7 @@ export const useGameState = () => {
   };
 
   const thirdRound = (guess: InsideOutsideOrSame) => {
-    const firstCard = gameState.cards[0];
-    const secondCard = gameState.cards[1];
-    const thirdCard = gameState.cards[2];
-
-    const isInside =
-      Math.min(firstCard.values.numericValue, secondCard.values.numericValue) <
-        thirdCard.values.numericValue &&
-      thirdCard.values.numericValue <
-        Math.max(firstCard.values.numericValue, secondCard.values.numericValue);
-
-    const isOutside =
-      (thirdCard.values.numericValue > firstCard.values.numericValue &&
-        thirdCard.values.numericValue > secondCard.values.numericValue) ||
-      (thirdCard.values.numericValue < firstCard.values.numericValue &&
-        thirdCard.values.numericValue < secondCard.values.numericValue);
-
-    const isSame =
-      firstCard.values.numericValue === thirdCard.values.numericValue ||
-      secondCard.values.numericValue === thirdCard.values.numericValue;
-
-    const isCorrect =
-      (isInside && guess === 'inside') ||
-      (isOutside && guess === 'outside') ||
-      (isSame && guess === 'same');
-
-    if (isCorrect) {
+    if (validateThirdRound(gameState.cards[0], gameState.cards[1], gameState.cards[2], guess)) {
       dispatch({ type: 'ADVANCE_ROUND', cardToFlip: 2 });
     } else {
       dispatch({ type: 'GAME_OVER', cardToFlip: 2 });
@@ -178,11 +146,7 @@ export const useGameState = () => {
   };
 
   const finalRound = (suit: Suit) => {
-    const finalCard = gameState.cards[3];
-
-    const isCorrect = finalCard.suit === suit;
-
-    if (isCorrect) {
+    if (validateFinalRound(gameState.cards[3], suit)) {
       dispatch({ type: 'WIN_GAME' });
     } else {
       dispatch({ type: 'GAME_OVER', cardToFlip: 3 });

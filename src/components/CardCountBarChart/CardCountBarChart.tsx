@@ -26,8 +26,8 @@ export const CardCountBarChart = ({ cardCounts }: CardCountBarChartProps) => {
         <YAxis />
         <Tooltip labelStyle={{ color: 'black' }} />
         <Bar dataKey="count">
-          {cardCounts.map((entry) => (
-            <Cell fill={isRed(entry.card_suit) ? 'red' : 'black'} />
+          {cardCounts.map((entry, index) => (
+            <Cell key={index} fill={isRed(entry.card_suit) ? 'red' : 'black'} />
           ))}
         </Bar>
       </BarChart>
