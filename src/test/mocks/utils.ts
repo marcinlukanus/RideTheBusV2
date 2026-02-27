@@ -48,8 +48,6 @@ export const mockGetUserBeerdleStats = (stats: {
   bestScore?: number;
 }) => {
   const scores = stats.scores || [];
-  const bestScore = stats.bestScore ?? (scores.length > 0 ? Math.min(...scores.map((s) => s.score)) : null);
-
   server.use(
     http.get('*/rest/v1/beerdle_scores', ({ request }) => {
       const url = new URL(request.url);

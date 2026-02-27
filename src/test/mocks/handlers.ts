@@ -19,7 +19,7 @@ export const handlers = [
             game_date: body?.p_target_date || '2025-01-29',
           },
         ]);
-      } catch (error) {
+      } catch {
         // Fallback if body parsing fails
         return HttpResponse.json([
           {
@@ -43,7 +43,7 @@ export const handlers = [
           game_date: body?.p_target_date || '2025-01-29',
         },
       ]);
-    } catch (error) {
+    } catch {
       return HttpResponse.json([
         {
           seed: 12345,
@@ -75,7 +75,6 @@ export const handlers = [
   http.get('*/rest/v1/beerdle_scores', async ({ request }) => {
     const url = new URL(request.url);
     const gameDate = url.searchParams.get('game_date');
-    const userId = url.searchParams.get('user_id');
 
     // If game_date is specified, it's getTodayBeerdleScore
     if (gameDate) {

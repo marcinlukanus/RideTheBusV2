@@ -44,7 +44,7 @@ const generateCards = () =>
 
 export const drawCards = (amountToDraw: number): Card[] => {
   const deck = generateCards();
-  let selectedCards: Card[] = [];
+  const selectedCards: Card[] = [];
 
   for (let i = 0; i < amountToDraw; i++) {
     const randomIndex = Math.floor(Math.random() * deck.length);
