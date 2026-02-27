@@ -5,6 +5,15 @@
   --breakpoint-2xl: 100rem;
   --breakpoint-3xl: 120rem;
   --color-red: #ff0000;
+
+  /* Brand surfaces */
+  --color-surface: #22303f;
+  --color-surface-raised: #1a2531;
+  --color-surface-input: #374151;
+
+  /* Brand actions */
+  --color-brand: #dc2626;
+  --color-brand-hover: #b91c1c;
 }
 
 :root {
