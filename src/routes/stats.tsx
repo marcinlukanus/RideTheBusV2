@@ -4,14 +4,14 @@ import { Stats } from '../pages/Stats';
 export const Route = createFileRoute('/stats')({
   head: () => ({
     meta: [
-      { title: 'Ride The Bus Card Counts' },
+      { title: 'Ride The Bus Card Stats & Probabilities' },
       {
         name: 'description',
         content:
-          'Explore card distribution and stats for Ride The Bus. See counts and probabilities to improve your strategy.',
+          'Explore card distribution and draw statistics for Ride The Bus. See counts and probabilities to sharpen your strategy.',
       },
-      { rel: 'canonical', href: 'https://ridethebus.party/stats' },
     ],
+    links: [{ rel: 'canonical', href: 'https://ridethebus.party/stats' }],
   }),
   component: Stats,
 });

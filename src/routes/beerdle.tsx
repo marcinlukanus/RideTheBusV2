@@ -4,24 +4,24 @@ import { BeerdleGame } from '../components/BeerdleGame/BeerdleGame';
 export const Route = createFileRoute('/beerdle')({
   head: () => ({
     meta: [
-      { title: 'Beerdle - Daily Ride The Bus Challenge' },
+      { title: 'Beerdle – Daily Ride The Bus Card Game Challenge' },
       {
         name: 'description',
         content:
-          'Beerdle - The daily Ride The Bus challenge. Same cards for everyone, compete for the lowest score. Like Wordle, but with drinks!',
+          'Beerdle is the daily Ride The Bus challenge. Every player gets the same deck – compete to take the fewest drinks. Like Wordle, but with cards and drinking. Free to play.',
       },
       {
         name: 'keywords',
         content:
-          'beerdle, daily drinking game, ride the bus, wordle drinking game, daily card game, daily challenge, drinking card game',
+          'beerdle, daily drinking game, daily card game challenge, ride the bus daily, wordle drinking game, daily challenge drinking game',
       },
       { property: 'og:type', content: 'website' },
       { property: 'og:site_name', content: 'Ride The Bus' },
-      { property: 'og:title', content: 'Beerdle - Daily Ride The Bus Challenge' },
+      { property: 'og:title', content: 'Beerdle – Daily Ride The Bus Card Game Challenge' },
       {
         property: 'og:description',
         content:
-          'Same cards for everyone. How many drinks will you take today? Play the daily Ride The Bus challenge!',
+          'Same deck for everyone, every day. How many drinks will you take today? Play Beerdle – the daily Ride The Bus challenge.',
       },
       { property: 'og:url', content: 'https://ridethebus.party/beerdle' },
       {
@@ -29,18 +29,18 @@ export const Route = createFileRoute('/beerdle')({
         content: 'https://ridethebus.party/images/og/og-image.png',
       },
       { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: 'Beerdle - Daily Ride The Bus Challenge' },
+      { name: 'twitter:title', content: 'Beerdle – Daily Ride The Bus Card Game Challenge' },
       {
         name: 'twitter:description',
         content:
-          'Same cards for everyone. How many drinks will you take today? Play the daily Ride The Bus challenge!',
+          'Same deck for everyone, every day. How many drinks will you take today? Play Beerdle – the daily Ride The Bus challenge.',
       },
       {
         name: 'twitter:image',
         content: 'https://ridethebus.party/images/og/og-image.png',
       },
-      { rel: 'canonical', href: 'https://ridethebus.party/beerdle' },
     ],
+    links: [{ rel: 'canonical', href: 'https://ridethebus.party/beerdle' }],
   }),
   component: BeerdlePage,
 });
