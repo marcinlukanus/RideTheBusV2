@@ -1,4 +1,5 @@
 import { Card } from '../Card/Card';
+import { Button } from '../ui/Button';
 import { useEffect } from 'react';
 import {
   HigherLowerOrSame,
@@ -136,8 +137,8 @@ export const Game = () => {
 
         {gameState.isGameOver && (
           <div className="mt-8 flex">
-            <button
-              className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md active:translate-y-1"
+            <Button
+              variant="ghost"
               onClick={() =>
                 dispatch({
                   type: 'DRAW_CARDS',
@@ -147,7 +148,7 @@ export const Game = () => {
               }
             >
               {gameState.hasWon ? 'Another Ride?' : 'Redraw Cards'}
-            </button>
+            </Button>
           </div>
         )}
 
