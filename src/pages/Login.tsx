@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
 import supabase from '../utils/supabase';
 import { Button } from '../components/ui/Button';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +10,13 @@ export const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate({ to: '/' });
+    }
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +30,7 @@ export const Login = () => {
       });
 
       if (error) throw error;
-      navigate('/');
+      navigate({ to: '/' });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
@@ -33,11 +40,6 @@ export const Login = () => {
 
   return (
     <div className="flex min-h-screen items-start justify-center px-4 pt-20 sm:px-6 lg:px-8">
-      <Helmet prioritizeSeoTags>
-        <title>Login – Ride The Bus</title>
-        <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://ridethebus.party/login" />
-      </Helmet>
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-2xl dark:bg-gray-800">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">

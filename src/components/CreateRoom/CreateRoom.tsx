@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import supabase from '../../utils/supabase';
 import { generateRoomId } from '../../utils/generateRoomId';
 import { RoomLink } from '../RoomLink/RoomLink';
@@ -69,7 +69,7 @@ export const CreateRoom = () => {
   };
 
   const startGame = () => {
-    navigate(`/party-bus/${roomCode}`);
+    navigate({ to: '/party-bus/$roomCode', params: { roomCode } });
   };
 
   return (
