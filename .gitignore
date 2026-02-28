@@ -29,6 +29,7 @@ dist-ssr
 supabase/
 
 coverage/
+.netlify/
 
 # TanStack Router auto-generated file
 src/routeTree.gen.ts
