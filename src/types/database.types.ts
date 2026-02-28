@@ -139,6 +139,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null;
+          country: string | null;
+          country_confetti: boolean;
           created_at: string;
           id: string;
           updated_at: string;
@@ -146,6 +148,8 @@ export type Database = {
         };
         Insert: {
           avatar_url?: string | null;
+          country?: string | null;
+          country_confetti?: boolean;
           created_at?: string;
           id: string;
           updated_at?: string;
@@ -153,6 +157,8 @@ export type Database = {
         };
         Update: {
           avatar_url?: string | null;
+          country?: string | null;
+          country_confetti?: boolean;
           created_at?: string;
           id?: string;
           updated_at?: string;
@@ -187,6 +193,14 @@ export type Database = {
     };
     Functions: {
       cleanup_old_rooms: { Args: never; Returns: undefined };
+      get_country_medal_table: {
+        Args: never;
+        Returns: {
+          country: string;
+          wins: number;
+          avg_drinks: number;
+        }[];
+      };
       get_or_create_daily_seed: {
         Args: never;
         Returns: {

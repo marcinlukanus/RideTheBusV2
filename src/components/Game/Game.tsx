@@ -1,6 +1,6 @@
 import { Card } from '../Card/Card';
 import { Button } from '../ui/Button';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   HigherLowerOrSame,
   InsideOutsideOrSame,
@@ -16,15 +16,58 @@ import { postScore } from '../../api/postScore';
 import { LongestRides } from '../LongestRides/LongestRides';
 import { postCardCounts } from '../../api/postCardCounts';
 import { useAuth } from '../../contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { getProfileById } from '../../api/getProfileById';
+import { queryKeys } from '../../lib/queryKeys';
+import { getConfettiColors } from '../../utils/countryColors';
+import { Link } from '@tanstack/react-router';
+import { MedalTable } from '../MedalTable/MedalTable';
+
+const COUNTRY_PROMPT_KEY = 'country_prompt_dismissed';
 
 export const Game = () => {
   const { user } = useAuth();
   const { width, height } = useDocumentSize();
-
-  const { gameState, dispatch, finalRound, firstRound, secondRound, thirdRound } = useGameState();
+  const [promptDismissed, setPromptDismissed] = useState(true);
 
   useEffect(() => {
-    // Draw cards on initial render
+    setPromptDismissed(localStorage.getItem(COUNTRY_PROMPT_KEY) === '1');
+  }, []);
+
+  const { gameState, dispatch, finalRound, firstRound, secondRound, thirdRound } = useGameState();
+  const initializedRef = useRef(false);
+
+  const { data: currentProfile, isSuccess: profileLoaded } = useQuery({
+    queryKey: queryKeys.profileById(user?.id ?? ''),
+    queryFn: () => getProfileById(user!.id),
+    enabled: !!user?.id,
+  });
+
+  const userCountry = currentProfile?.country ?? null;
+  const isPerfectRide = gameState.hasWon && gameState.timesRedrawn === 0;
+  const confettiColors = getConfettiColors(
+    currentProfile?.country_confetti !== false && isPerfectRide ? userCountry : null,
+  );
+
+  // Show prompt when logged-in user with a loaded profile and no country wins
+  const showCountryPrompt =
+    !!user &&
+    profileLoaded &&
+    userCountry === null &&
+    !promptDismissed &&
+    gameState.isGameOver &&
+    gameState.hasWon;
+
+  const handleDismissPrompt = () => {
+    localStorage.setItem(COUNTRY_PROMPT_KEY, '1');
+    setPromptDismissed(true);
+  };
+
+  useEffect(() => {
+    // Draw cards on initial render — ref guard prevents double-dispatch in React Strict Mode,
+    // which preserves state across its simulated unmount/remount cycle.
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     dispatch({ type: 'DRAW_CARDS', amountToDraw: 4, resetScore: false });
   }, []);
 
@@ -118,6 +161,7 @@ export const Game = () => {
           <Confetti
             width={width}
             height={height}
+            colors={confettiColors}
             style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 9999 }}
           />,
           document.body,
@@ -160,11 +204,40 @@ export const Game = () => {
           </p>
         )}
 
-        <p className="mt-4 text-xl font-bold">Drinks taken: {gameState.timesRedrawn}</p>
+        {gameState.cards.length > 0 && (
+          <p className="mt-4 text-xl font-bold">Drinks taken: {gameState.timesRedrawn}</p>
+        )}
 
-        <div className="mt-8 flex gap-5">
+        {showCountryPrompt && (
+          <div className="mt-6 flex max-w-sm items-start gap-3 rounded-lg border border-gray-600 bg-gray-800 px-4 py-3 text-sm">
+            <span className="mt-0.5 text-lg leading-none">🌍</span>
+            <div className="flex-1">
+              <p className="text-white">
+                Which country are you drinking for? Set your flag and appear on the Medal Table.
+              </p>
+              <Link
+                to="/$username/profile"
+                params={{ username: currentProfile?.username ?? '' }}
+                className="mt-1 inline-block text-sky-400 hover:underline"
+                onClick={handleDismissPrompt}
+              >
+                Set my country →
+              </Link>
+            </div>
+            <button
+              className="mt-0.5 text-gray-400 hover:text-white"
+              onClick={handleDismissPrompt}
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <div className="mt-8 flex flex-wrap justify-center gap-5">
           {/* <BestScores /> */}
           <LongestRides />
+          <MedalTable />
         </div>
       </div>
     </>

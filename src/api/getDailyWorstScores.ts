@@ -1,18 +1,16 @@
 import supabase from '../utils/supabase';
 
-export const getDailyWorstScores = async () => {
-  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+export interface LeaderboardEntry {
+  score: number;
+  country: string | null;
+}
 
-  const { data, error } = await supabase
-    .from('scores')
-    .select('score, created_at')
-    .gt('created_at', oneDayAgo)
-    .order('score', { ascending: false })
-    .limit(5);
+export const getDailyWorstScores = async (): Promise<LeaderboardEntry[]> => {
+  const { data, error } = await supabase.rpc('get_longest_rides');
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data;
+  return data ?? [];
 };
