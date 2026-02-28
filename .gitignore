@@ -27,3 +27,8 @@ dist-ssr
 .env.local
 
 supabase/
+
+coverage/
+
+# TanStack Router auto-generated file
+src/routeTree.gen.ts

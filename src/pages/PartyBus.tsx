@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from '@tanstack/react-router';
 import supabase from '../utils/supabase';
 import { PartyGame } from '../components/PartyGame/PartyGame';
 import { generateRoomId } from '../utils/generateRoomId';
@@ -94,7 +93,7 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
 
 export const PartyBus = () => {
   const navigate = useNavigate();
-  const { roomCode } = useParams();
+  const { roomCode } = useParams({ strict: false }) as { roomCode?: string };
   const [isHost, setIsHost] = useState(false);
   const [nickname, setNickname] = useState<string | null>(null);
   const [showNicknamePrompt, setShowNicknamePrompt] = useState(true);
@@ -463,7 +462,7 @@ export const PartyBus = () => {
         setIsHost(true);
         setShowNicknamePrompt(false);
         setRoomId(room.id);
-        navigate(`/party-bus/${newRoomCode}`);
+        navigate({ to: '/party-bus/$roomCode', params: { roomCode: newRoomCode } });
         return undefined;
       } catch (err) {
         console.error('Error creating room:', err);
@@ -496,14 +495,6 @@ export const PartyBus = () => {
 
   return (
     <div className="container mx-auto px-4">
-      <Helmet prioritizeSeoTags>
-        <title>Ride The Party Bus</title>
-        <link rel="canonical" href="https://ridethebus.party/party-bus" />
-        <meta
-          name="description"
-          content="Ride The Bus with friends! Create or join a room and play the classic drinking game together in real-time."
-        />
-      </Helmet>
       <h1 className="mb-2 text-4xl leading-tight font-bold md:text-5xl">Ride The Party Bus</h1>
       <h4 className="mt-0 mb-6 text-xl italic md:text-2xl">
         The best single-player drinking game, now with friends!
