@@ -1,6 +1,6 @@
 import { Card } from '../Card/Card';
 import { Button } from '../ui/Button';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   HigherLowerOrSame,
   InsideOutsideOrSame,
@@ -35,6 +35,7 @@ export const Game = () => {
   }, []);
 
   const { gameState, dispatch, finalRound, firstRound, secondRound, thirdRound } = useGameState();
+  const initializedRef = useRef(false);
 
   const { data: currentProfile, isSuccess: profileLoaded } = useQuery({
     queryKey: queryKeys.profileById(user?.id ?? ''),
@@ -60,7 +61,10 @@ export const Game = () => {
   };
 
   useEffect(() => {
-    // Draw cards on initial render
+    // Draw cards on initial render — ref guard prevents double-dispatch in React Strict Mode,
+    // which preserves state across its simulated unmount/remount cycle.
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     dispatch({ type: 'DRAW_CARDS', amountToDraw: 4, resetScore: false });
   }, []);
 
