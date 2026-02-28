@@ -1,37 +1,15 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getDailyWorstScores, getDailyWorstScoresByCountry } from '../../api/getDailyWorstScores';
-import { getProfileById } from '../../api/getProfileById';
+import { getDailyWorstScores } from '../../api/getDailyWorstScores';
 import { Panel } from '../ui/Panel';
-import { useAuth } from '../../contexts/AuthContext';
 import { queryKeys } from '../../lib/queryKeys';
 import { getFlagEmoji } from '../../utils/countries';
 
 export const LongestRides = () => {
-  const { user } = useAuth();
-  const [filter, setFilter] = useState<'global' | 'country'>('global');
-
-  const { data: currentProfile } = useQuery({
-    queryKey: queryKeys.profileById(user?.id ?? ''),
-    queryFn: () => getProfileById(user!.id),
-    enabled: !!user?.id,
-  });
-
-  const userCountry = currentProfile?.country ?? null;
-  const canFilterByCountry = !!user && !!userCountry;
-
-  const { data: globalScores = [] } = useQuery({
+  const { data: scores = [] } = useQuery({
     queryKey: queryKeys.longestRides,
     queryFn: getDailyWorstScores,
   });
 
-  const { data: countryScores = [] } = useQuery({
-    queryKey: queryKeys.longestRidesByCountry(userCountry ?? ''),
-    queryFn: () => getDailyWorstScoresByCountry(userCountry!),
-    enabled: canFilterByCountry && filter === 'country',
-  });
-
-  const scores = filter === 'country' && canFilterByCountry ? countryScores : globalScores;
   const worstScore = scores.length > 0 ? scores[0].score : 0;
   const hasScores = scores.length > 0;
 
@@ -41,31 +19,6 @@ export const LongestRides = () => {
         <p className="text-center text-2xl font-bold">Longest Rides</p>
         <p className="text-center italic">Past 24 hours</p>
       </div>
-
-      {canFilterByCountry && (
-        <div className="flex justify-center gap-1 rounded-lg bg-gray-700 p-1">
-          <button
-            className={`flex-1 rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-              filter === 'global'
-                ? 'bg-gray-500 text-white'
-                : 'text-gray-300 hover:text-white'
-            }`}
-            onClick={() => setFilter('global')}
-          >
-            Global
-          </button>
-          <button
-            className={`flex-1 rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-              filter === 'country'
-                ? 'bg-gray-500 text-white'
-                : 'text-gray-300 hover:text-white'
-            }`}
-            onClick={() => setFilter('country')}
-          >
-            {getFlagEmoji(userCountry)} My Country
-          </button>
-        </div>
-      )}
 
       {!hasScores && <p>No rides taken...</p>}
 
@@ -78,12 +31,9 @@ export const LongestRides = () => {
               width: `${(entry.score / worstScore) * 100}%`,
             }}
           >
+            <span className="font-bold text-slate-800">{entry.score}</span>
             {entry.country && (
               <span className="text-base leading-none">{getFlagEmoji(entry.country)}</span>
-            )}
-            <span className="font-bold text-slate-800">{entry.score}</span>
-            {entry.username && (
-              <span className="truncate text-xs text-slate-600">{entry.username}</span>
             )}
           </li>
         ))}

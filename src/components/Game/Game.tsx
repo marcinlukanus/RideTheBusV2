@@ -201,7 +201,9 @@ export const Game = () => {
           </p>
         )}
 
-        <p className="mt-4 text-xl font-bold">Drinks taken: {gameState.timesRedrawn}</p>
+        {gameState.cards.length > 0 && (
+          <p className="mt-4 text-xl font-bold">Drinks taken: {gameState.timesRedrawn}</p>
+        )}
 
         {showCountryPrompt && (
           <div className="mt-6 flex max-w-sm items-start gap-3 rounded-lg border border-gray-600 bg-gray-800 px-4 py-3 text-sm">

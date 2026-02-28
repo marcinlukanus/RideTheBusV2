@@ -6,7 +6,6 @@ export const queryKeys = {
   userBeerdleStats: (userId: string) => ['userBeerdleStats', userId] as const,
   todayBeerdleScore: (userId: string) => ['todayBeerdleScore', userId] as const,
   longestRides: ['longestRides'] as const,
-  longestRidesByCountry: (country: string) => ['longestRides', country] as const,
   medalTable: ['medalTable'] as const,
   profileById: (userId: string) => ['profileById', userId] as const,
 };
