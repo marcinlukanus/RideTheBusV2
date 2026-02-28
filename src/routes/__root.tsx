@@ -9,6 +9,7 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { queryClient } from '../lib/queryClient';
+import appCss from '../index.css?url';
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -133,7 +134,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       { name: 'theme-color', content: '#111827' },
     ],
-    links: [{ rel: 'icon', href: '/favicon.ico' }],
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', href: '/favicon.ico' },
+    ],
     scripts: [
       {
         src: 'https://www.googletagmanager.com/gtag/js?id=G-4NC7TQ8TLS',
