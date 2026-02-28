@@ -11,6 +11,13 @@ export const postBeerdleScore = async (
   gameDate: string,
   score: number,
 ): Promise<SaveBeerdleScoreResult> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || user.id !== userId) {
+    throw new Error('You can only submit scores for your own account');
+  }
+
   const { data, error } = await supabase.rpc('save_beerdle_score', {
     p_user_id: userId,
     p_game_date: gameDate,

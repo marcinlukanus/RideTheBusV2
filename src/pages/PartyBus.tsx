@@ -281,11 +281,12 @@ export const PartyBus = () => {
           cleanup.open(
             'DELETE',
             `${
-              import.meta.env.VITE_SUPABASE_URL
-            }/rest/v1/party_bus_players?room_id=eq.${roomId}&nickname=eq.${nickname}`,
+              import.meta.env.VITE_SUPABASE_DATABASE_URL
+            }/rest/v1/party_bus_players?room_id=eq.${roomId}&nickname=eq.${encodeURIComponent(nickname)}`,
             false,
           );
           cleanup.setRequestHeader('Content-Type', 'application/json');
+          cleanup.setRequestHeader('apikey', import.meta.env.VITE_SUPABASE_ANON_KEY);
           cleanup.send();
         }
       };

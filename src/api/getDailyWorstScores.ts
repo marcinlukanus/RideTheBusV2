@@ -5,7 +5,7 @@ export const getDailyWorstScores = async () => {
 
   const { data, error } = await supabase
     .from('scores')
-    .select('*')
+    .select('score, created_at')
     .gt('created_at', oneDayAgo)
     .order('score', { ascending: false })
     .limit(5);

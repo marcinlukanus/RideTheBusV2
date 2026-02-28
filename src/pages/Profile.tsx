@@ -48,6 +48,9 @@ export const Profile = () => {
 
   const avatarMutation = useMutation({
     mutationFn: async ({ file, profileId }: { file: File; profileId: string }) => {
+      if (!user || user.id !== profileId) {
+        throw new Error('You can only update your own avatar');
+      }
       const { publicUrl } = await uploadAvatar(file, profileId);
       const { error } = await supabase
         .from('profiles')
