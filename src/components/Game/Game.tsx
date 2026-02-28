@@ -44,7 +44,9 @@ export const Game = () => {
   });
 
   const userCountry = currentProfile?.country ?? null;
-  const confettiColors = getConfettiColors(userCountry);
+  const confettiColors = getConfettiColors(
+    currentProfile?.country_confetti !== false ? userCountry : null,
+  );
 
   // Show prompt when logged-in user with a loaded profile and no country wins
   const showCountryPrompt =

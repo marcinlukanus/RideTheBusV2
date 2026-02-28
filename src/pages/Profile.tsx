@@ -81,6 +81,32 @@ export const Profile = () => {
     },
   });
 
+  const confettiMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ country_confetti: enabled })
+        .eq('id', profile!.id);
+      if (error) throw error;
+    },
+    onMutate: async (enabled) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.profile(username!) });
+      const previous = queryClient.getQueryData(queryKeys.profile(username!));
+      queryClient.setQueryData(queryKeys.profile(username!), (old: Profile) => ({
+        ...old,
+        country_confetti: enabled,
+      }));
+      return { previous };
+    },
+    onError: (_err, _enabled, context) => {
+      queryClient.setQueryData(queryKeys.profile(username!), context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(username!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileById(user!.id) });
+    },
+  });
+
   const isOwnProfile = user?.id === profile?.id;
 
   const handleAvatarClick = () => {
@@ -181,7 +207,7 @@ export const Profile = () => {
           </div>
         )}
 
-        {/* Country picker for own profile */}
+        {/* Country picker + confetti toggle for own profile */}
         {isOwnProfile && (
           <div className="mt-4 w-full max-w-xs">
             {!showCountryPicker ? (
@@ -243,6 +269,19 @@ export const Profile = () => {
                 </ul>
               </div>
             )}
+          {profile.country && (
+            <label className="mt-3 flex cursor-pointer items-center justify-between rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-300">
+              <span>🎊 Country-color confetti on wins</span>
+              <input
+                type="checkbox"
+                className="ml-3 h-4 w-4"
+                style={{ accentColor: '#d97706' }}
+                checked={profile.country_confetti}
+                disabled={confettiMutation.isPending}
+                onChange={(e) => confettiMutation.mutate(e.target.checked)}
+              />
+            </label>
+          )}
           </div>
         )}
       </div>
