@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type RoomLinkProps = {
   roomId: string;
@@ -6,8 +6,11 @@ type RoomLinkProps = {
 
 export const RoomLink = ({ roomId }: RoomLinkProps) => {
   const [copied, setCopied] = useState(false);
+  const [roomUrl, setRoomUrl] = useState('');
 
-  const roomUrl = `${window.location.origin}/party-bus/${roomId}`;
+  useEffect(() => {
+    setRoomUrl(`${window.location.origin}/party-bus/${roomId}`);
+  }, [roomId]);
 
   const copyToClipboard = async () => {
     try {

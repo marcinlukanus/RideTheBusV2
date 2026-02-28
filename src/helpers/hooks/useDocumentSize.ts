@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 
 export const useDocumentSize = () => {
   const [size, setSize] = useState({
-    width: window.innerWidth,
-    height: Math.max(document.documentElement.scrollHeight, window.innerHeight),
+    width: 0,
+    height: 0,
   });
 
   useEffect(() => {
