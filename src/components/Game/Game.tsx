@@ -44,8 +44,9 @@ export const Game = () => {
   });
 
   const userCountry = currentProfile?.country ?? null;
+  const isPerfectRide = gameState.hasWon && gameState.timesRedrawn === 0;
   const confettiColors = getConfettiColors(
-    currentProfile?.country_confetti !== false ? userCountry : null,
+    currentProfile?.country_confetti !== false && isPerfectRide ? userCountry : null,
   );
 
   // Show prompt when logged-in user with a loaded profile and no country wins

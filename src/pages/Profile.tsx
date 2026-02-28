@@ -271,7 +271,7 @@ export const Profile = () => {
             )}
           {profile.country && (
             <label className="mt-3 flex cursor-pointer items-center justify-between rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-300">
-              <span>🎊 Country-color confetti on wins</span>
+              <span className="text-balance">🎊 Country-color confetti on perfect rides</span>
               <input
                 type="checkbox"
                 className="ml-3 h-4 w-4"
