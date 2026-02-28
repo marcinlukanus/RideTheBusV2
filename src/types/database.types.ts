@@ -199,6 +199,10 @@ export type Database = {
         Args: { card_suit_input: string; card_value_input: string };
         Returns: undefined;
       };
+      increment_card_counts_bulk: {
+        Args: { card_suits: string[]; card_values: string[] };
+        Returns: undefined;
+      };
       save_beerdle_score: {
         Args: { p_game_date: string; p_score: number; p_user_id: string };
         Returns: {
