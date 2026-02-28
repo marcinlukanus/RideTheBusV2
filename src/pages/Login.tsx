@@ -77,12 +77,20 @@ export const Login = () => {
               />
             </div>
             <div>
-              <label
-                htmlFor="password"
-                className="mb-1 block text-left text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Password
-              </label>
+              <div className="mb-1 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="block text-left text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Password
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 name="password"

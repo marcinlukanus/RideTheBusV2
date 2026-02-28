@@ -41,8 +41,15 @@ src/
 ```bash
 npm run dev          # dev server → http://localhost:5173
 npx tsc --noEmit     # type-check (run before every commit)
+npm run lint         # ESLint check (also runs in CI)
 npm run start        # start production SSR server (node dist/server.js)
 ```
+
+## Linting gotchas
+- CI runs ESLint via `npm run lint` — must be clean before merging
+- `react/no-unescaped-entities`: apostrophes and quotes in JSX text must be escaped
+  - `'` → `&apos;`  |  `"` → `&quot;`
+  - Applies to all text content inside JSX tags (not inside `{}` expressions or attributes)
 
 ## Routing conventions (TanStack Router)
 - `Link`, `useNavigate`, `useParams` all import from `@tanstack/react-router`
