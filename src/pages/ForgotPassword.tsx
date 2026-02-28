@@ -38,7 +38,7 @@ export const ForgotPassword = () => {
               We sent a password reset link to <span className="font-medium text-gray-900 dark:text-white">{email}</span>.
             </p>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Check your spam folder if it doesn't show up in a minute.
+              Check your spam folder if it doesn&apos;t show up in a minute.
             </p>
           </div>
           <div className="text-center">
@@ -60,7 +60,7 @@ export const ForgotPassword = () => {
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Reset your password</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Enter your email and we'll send you a reset link.
+            Enter your email and we&apos;ll send you a reset link.
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
