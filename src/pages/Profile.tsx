@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProfileByUsername } from '../api/getProfileByUsername';
@@ -10,6 +10,7 @@ import supabase from '../utils/supabase';
 import { uploadAvatar } from '../api/uploadAvatar';
 import { queryClient } from '../lib/queryClient';
 import { queryKeys } from '../lib/queryKeys';
+import { COUNTRIES, getFlagEmoji, getCountryName } from '../utils/countries';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Score = Database['public']['Tables']['scores']['Row'];
@@ -19,6 +20,8 @@ export const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [countrySearch, setCountrySearch] = useState('');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const {
     data: profile,
@@ -62,6 +65,22 @@ export const Profile = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.profile(username!) }),
   });
 
+  const countryMutation = useMutation({
+    mutationFn: async (country: string | null) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ country })
+        .eq('id', profile!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(username!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileById(user!.id) });
+      setShowCountryPicker(false);
+      setCountrySearch('');
+    },
+  });
+
   const isOwnProfile = user?.id === profile?.id;
 
   const handleAvatarClick = () => {
@@ -75,6 +94,18 @@ export const Profile = () => {
     if (!file || !profile) return;
     avatarMutation.mutate({ file, profileId: profile.id });
   };
+
+  const filteredCountries = COUNTRIES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.code.toLowerCase().includes(countrySearch.toLowerCase()),
+  );
+
+  const wins = scores.filter((s) => s.score === 0).length;
+  const avgDrinks =
+    scores.length > 0
+      ? (scores.reduce((sum, s) => sum + s.score, 0) / scores.length).toFixed(1)
+      : null;
 
   if (isLoading) {
     return (
@@ -129,9 +160,90 @@ export const Profile = () => {
           )}
         </div>
         <h1 className="text-3xl font-bold">{profile.username}</h1>
-        {/* Display this h3 only if the profile.created_at is before March 24, 2025 local TZ */}
+
+        {/* Founding Bus Rider badge */}
         {new Date(profile.created_at) < new Date('2025-03-24T00:00:00') && (
           <h3 className="mt-2 text-xl italic">Founding Bus Rider 🍻</h3>
+        )}
+
+        {/* Country badge */}
+        {profile.country && (
+          <p className="mt-1 text-lg">
+            Drinking for {getFlagEmoji(profile.country)} {getCountryName(profile.country)}
+          </p>
+        )}
+
+        {/* Stats summary */}
+        {scores.length > 0 && (
+          <div className="mt-3 flex gap-4 text-sm text-gray-400">
+            <span>{wins} win{wins !== 1 ? 's' : ''}</span>
+            {avgDrinks !== null && <span>{avgDrinks} avg drinks</span>}
+          </div>
+        )}
+
+        {/* Country picker for own profile */}
+        {isOwnProfile && (
+          <div className="mt-4 w-full max-w-xs">
+            {!showCountryPicker ? (
+              <button
+                className="w-full rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-300 hover:border-gray-400 hover:text-white transition-colors"
+                onClick={() => setShowCountryPicker(true)}
+              >
+                {profile.country
+                  ? `${getFlagEmoji(profile.country)} ${getCountryName(profile.country)} — Change`
+                  : '🌍 Set your country'}
+              </button>
+            ) : (
+              <div className="rounded-md border border-gray-600 bg-gray-800">
+                <div className="flex items-center gap-2 border-b border-gray-600 p-2">
+                  <input
+                    type="text"
+                    placeholder="Search countries..."
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-gray-500"
+                    autoFocus
+                  />
+                  <button
+                    className="text-xs text-gray-400 hover:text-white"
+                    onClick={() => {
+                      setShowCountryPicker(false);
+                      setCountrySearch('');
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <ul className="max-h-48 overflow-y-auto">
+                  {profile.country && (
+                    <li>
+                      <button
+                        className="w-full px-3 py-2 text-left text-sm text-gray-400 hover:bg-gray-700 hover:text-white"
+                        onClick={() => countryMutation.mutate(null)}
+                        disabled={countryMutation.isPending}
+                      >
+                        Remove country
+                      </button>
+                    </li>
+                  )}
+                  {filteredCountries.map((country) => (
+                    <li key={country.code}>
+                      <button
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-700 transition-colors"
+                        onClick={() => countryMutation.mutate(country.code)}
+                        disabled={countryMutation.isPending}
+                      >
+                        {country.flag} {country.name}
+                      </button>
+                    </li>
+                  ))}
+                  {filteredCountries.length === 0 && (
+                    <li className="px-3 py-2 text-sm text-gray-500">No countries found</li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
