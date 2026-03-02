@@ -24,14 +24,12 @@ export const LongestRides = () => {
 
       <ul>
         {scores.map((entry, index) => (
-          <li
-            key={index}
-            className="align-center mb-2.5 flex items-center gap-2 rounded-md bg-sky-200 p-2.5 transition-all duration-300"
-            style={{
-              width: `${(entry.score / worstScore) * 100}%`,
-            }}
-          >
-            <span className="font-bold text-slate-800">{entry.score}</span>
+          <li key={index} className="mb-2.5 flex items-center gap-2">
+            <div
+              className="h-8 rounded-md bg-sky-200 transition-all duration-300"
+              style={{ width: `${(entry.score / worstScore) * 100}%` }}
+            />
+            <span className="font-bold text-white">{entry.score}</span>
             {entry.country && (
               <span className="text-base leading-none">{getFlagEmoji(entry.country)}</span>
             )}
