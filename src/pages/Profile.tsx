@@ -377,9 +377,8 @@ export const Profile = () => {
                   <img
                     src={profile.card_back_url}
                     alt="Your card back"
-                    className="h-16 w-11 rounded-md border border-amber-600/40 object-cover"
+                    className="h-28 w-20 rounded-md border border-amber-600/40 object-cover"
                   />
-                  <span className="text-xs text-gray-400">Current card back</span>
                 </div>
               ) : (
                 <p className="mb-3 text-xs text-gray-400">No custom card back set yet.</p>
