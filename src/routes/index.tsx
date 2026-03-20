@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { getProfileById } from '../api/getProfileById';
 import { queryKeys } from '../lib/queryKeys';
+import supabase from '../utils/supabase';
 
 const PREMIUM_BANNER_KEY = 'premium_banner_dismissed';
 
@@ -39,9 +40,30 @@ function HomePage() {
     }
   }, []);
 
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
   const handleDismiss = () => {
     localStorage.setItem(PREMIUM_BANNER_KEY, '1');
     setShowBanner(false);
+  };
+
+  const handleUpgrade = async () => {
+    if (!user) return;
+    setCheckoutLoading(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const { data: urlData } = await supabase.functions.invoke('create-checkout-session', {
+        body: { origin: window.location.origin },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (urlData?.url) {
+        handleDismiss();
+        window.location.href = urlData.url;
+      }
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
   const isPremium = profile?.is_premium ?? false;
@@ -60,14 +82,13 @@ function HomePage() {
             <p className="mt-0.5 text-gray-300">
               Upload any image as your card back for $5 — lifetime access.{' '}
               {user ? (
-                <Link
-                  to="/$username/profile"
-                  params={{ username: profile?.username ?? '' }}
-                  className="text-amber-400 underline hover:text-amber-300"
-                  onClick={handleDismiss}
+                <button
+                  className="text-amber-400 underline hover:text-amber-300 disabled:opacity-60"
+                  onClick={handleUpgrade}
+                  disabled={checkoutLoading}
                 >
-                  Upgrade on your profile
-                </Link>
+                  {checkoutLoading ? 'Redirecting...' : 'Upgrade for $5'}
+                </button>
               ) : (
                 <Link
                   to="/login"
