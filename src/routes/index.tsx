@@ -6,7 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getProfileById } from '../api/getProfileById';
 import { queryKeys } from '../lib/queryKeys';
 import supabase from '../utils/supabase';
-import { trackBeginCheckout, trackPremiumView } from '../utils/analytics';
 
 const PREMIUM_BANNER_KEY = 'premium_banner_dismissed';
 
@@ -41,12 +40,6 @@ function HomePage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (showBanner && !isPremium) {
-      trackPremiumView();
-    }
-  }, [showBanner, isPremium]);
-
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const handleDismiss = () => {
@@ -56,7 +49,6 @@ function HomePage() {
 
   const handleUpgrade = async () => {
     if (!user) return;
-    trackBeginCheckout();
     setCheckoutLoading(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();

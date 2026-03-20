@@ -13,7 +13,6 @@ import { Card } from '../components/Card/Card';
 import { queryClient } from '../lib/queryClient';
 import { queryKeys } from '../lib/queryKeys';
 import { COUNTRIES, getFlagEmoji, getCountryName } from '../utils/countries';
-import { trackBeginCheckout, trackPremiumView, trackPurchase } from '../utils/analytics';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Score = Database['public']['Tables']['scores']['Row'];
@@ -45,12 +44,6 @@ export const Profile = () => {
     enabled: !!username,
   });
 
-  useEffect(() => {
-    if (isOwnProfile && profile && !profile.is_premium) {
-      trackPremiumView();
-    }
-  }, [isOwnProfile, profile?.is_premium]);
-
   // When Stripe redirects back with ?upgraded=true, the webhook may not have
   // fired yet. Poll the profile every 2s until is_premium flips true (max 10s).
   useEffect(() => {
@@ -64,12 +57,6 @@ export const Profile = () => {
     }, 2000);
     return () => clearInterval(interval);
   }, [showUpgradeSuccess, username]);
-
-  useEffect(() => {
-    if (showUpgradeSuccess && profile?.is_premium) {
-      trackPurchase();
-    }
-  }, [showUpgradeSuccess, profile?.is_premium]);
 
   const { data: scores = [] } = useQuery<Score[]>({
     queryKey: queryKeys.userScores(profile?.id ?? ''),
@@ -182,7 +169,6 @@ export const Profile = () => {
 
   const handleStartCheckout = async () => {
     if (!user) return;
-    trackBeginCheckout();
     setCheckoutLoading(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
