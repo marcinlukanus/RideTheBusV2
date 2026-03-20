@@ -1,50 +1,66 @@
-# React + TypeScript + Vite
+# Ride The Bus
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The classic drinking card game, free in your browser — [ridethebus.party](https://ridethebus.party)
 
-Currently, two official plugins are available:
+## What it is
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Single-player card game where you survive four rounds of guesses: **Red or Black → Higher or Lower → Inside or Outside → Suit**. Get one wrong and you ride the bus (drink and start over).
 
-## Expanding the ESLint configuration
+Also includes:
+- **Party Bus** — multiplayer room-based mode where everyone plays together
+- **Beerdle** — daily Wordle-style beer guessing game
+- **Stats** — track your win rate, streaks, and game history
+- **Profiles** — user accounts with optional premium card backs
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Stack
 
-- Configure the top-level `parserOptions` property like this:
+- **React 18.3 + TypeScript** — frontend
+- **Vite 7 + TanStack Start v1** — SSR, file-based routing
+- **TanStack Router v1 + TanStack Query v5** — routing and data fetching
+- **Tailwind CSS v4** — styling (tokens in `src/index.css`, no config file)
+- **Supabase** — auth, database, realtime (Party Bus), edge functions (Stripe checkout)
+- **Netlify** — deployment via `@netlify/vite-plugin-tanstack-start`
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
+## Dev setup
+
+```bash
+nvm use 22          # Node 22.12+ required
+npm install
+cp .env.example .env  # fill in Supabase credentials
+npm run dev         # http://localhost:5173
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Commands
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react';
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-});
+```bash
+npm run dev          # dev server with HMR
+npx tsc --noEmit     # type-check (run before committing)
+npm run lint         # ESLint
+npm run start        # production SSR server
 ```
+
+## Project structure
+
+```
+src/
+  routes/       # TanStack Router file-based routes
+  pages/        # page components (imported by routes)
+  components/   # reusable components (Game, ui/)
+  api/          # Supabase data-fetching helpers
+  contexts/     # AuthContext
+  lib/          # queryClient, queryKeys
+  utils/        # supabase singleton, misc utils
+  types/
+  index.css     # global styles + Tailwind @theme tokens
+supabase/
+  functions/    # edge functions (Stripe checkout, etc.)
+  migrations/   # database migrations
+```
+
+## Deploy
+
+```bash
+netlify deploy --prod
+```
+
+Builds via `vite build`, outputs to `dist/client`. The Netlify SSR function handles all routing.
