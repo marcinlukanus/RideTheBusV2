@@ -43,14 +43,6 @@ export const Footer = (): JSX.Element => {
             >
               Party Bus
             </Link>
-            <a
-              className="mb-2 flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 sm:mb-0 dark:text-gray-300 dark:hover:text-white"
-              href="https://buymeacoffee.com/ridethebus"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Buy me a beer!
-            </a>
           </div>
         </div>
       </div>

@@ -139,28 +139,34 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null;
+          card_back_url: string | null;
           country: string | null;
           country_confetti: boolean;
           created_at: string;
           id: string;
+          is_premium: boolean;
           updated_at: string;
           username: string;
         };
         Insert: {
           avatar_url?: string | null;
+          card_back_url?: string | null;
           country?: string | null;
           country_confetti?: boolean;
           created_at?: string;
           id: string;
+          is_premium?: boolean;
           updated_at?: string;
           username: string;
         };
         Update: {
           avatar_url?: string | null;
+          card_back_url?: string | null;
           country?: string | null;
           country_confetti?: boolean;
           created_at?: string;
           id?: string;
+          is_premium?: boolean;
           updated_at?: string;
           username?: string;
         };

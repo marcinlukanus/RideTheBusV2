@@ -175,6 +175,7 @@ export const Game = () => {
               rank={card.values.rank}
               showCardBack={card.showCardBack}
               suit={card.suit}
+              cardBackUrl={currentProfile?.card_back_url}
             />
           ))}
         </div>
