@@ -384,21 +384,34 @@ export const Profile = () => {
               ) : (
                 <p className="mb-3 text-xs text-gray-400">No custom card back set yet.</p>
               )}
-              <button
-                className="w-full rounded-md border border-amber-600/50 px-3 py-2 text-sm text-amber-300 transition-colors hover:border-amber-400 hover:text-amber-200"
-                onClick={() => cardBackInputRef.current?.click()}
-                disabled={cardBackMutation.isPending}
-              >
-                {cardBackMutation.isPending
-                  ? 'Uploading...'
-                  : profile.card_back_url
-                    ? 'Change Card Back'
-                    : 'Upload Card Back'}
-              </button>
-              {cardBackMutation.isError && (
-                <p className="mt-2 text-xs text-red-400">
-                  {(cardBackMutation.error as Error).message}
-                </p>
+              {cardBackMutation.isError ? (
+                <div className="rounded-md border border-red-600/50 bg-red-900/20 px-3 py-2 text-sm">
+                  <p className="font-medium text-red-400">Upload failed</p>
+                  <p className="mt-0.5 text-xs text-red-300">
+                    {(cardBackMutation.error as Error).message}
+                  </p>
+                  <button
+                    className="mt-2 text-xs text-red-400 underline hover:text-red-300"
+                    onClick={() => {
+                      cardBackMutation.reset();
+                      if (cardBackInputRef.current) cardBackInputRef.current.value = '';
+                    }}
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="w-full rounded-md border border-amber-600/50 px-3 py-2 text-sm text-amber-300 transition-colors hover:border-amber-400 hover:text-amber-200 disabled:opacity-60"
+                  onClick={() => cardBackInputRef.current?.click()}
+                  disabled={cardBackMutation.isPending}
+                >
+                  {cardBackMutation.isPending
+                    ? 'Uploading...'
+                    : profile.card_back_url
+                      ? 'Change Card Back'
+                      : 'Upload Card Back'}
+                </button>
               )}
               <input
                 type="file"
