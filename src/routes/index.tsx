@@ -76,7 +76,7 @@ function HomePage() {
       </h4>
 
       {showBanner && !isPremium && (
-        <div className="relative mb-6 max-w-sm rounded-lg border border-amber-600/50 bg-amber-900/20 px-6 py-3 text-sm">
+        <div className="relative mx-auto mb-6 max-w-lg rounded-lg border border-amber-600/50 bg-amber-900/20 px-6 py-3 text-center text-sm">
           <button
             className="absolute top-2 right-3 text-gray-400 hover:text-white"
             onClick={handleDismiss}
