@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProfileByUsername } from '../api/getProfileByUsername';
@@ -37,6 +37,20 @@ export const Profile = () => {
     queryFn: () => getProfileByUsername(username!),
     enabled: !!username,
   });
+
+  // When Stripe redirects back with ?upgraded=true, the webhook may not have
+  // fired yet. Poll the profile every 2s until is_premium flips true (max 10s).
+  useEffect(() => {
+    if (!showUpgradeSuccess || !username) return;
+    queryClient.invalidateQueries({ queryKey: queryKeys.profile(username) });
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(username) });
+      if (attempts >= 5) clearInterval(interval);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [showUpgradeSuccess, username]);
 
   const { data: scores = [] } = useQuery<Score[]>({
     queryKey: queryKeys.userScores(profile?.id ?? ''),
