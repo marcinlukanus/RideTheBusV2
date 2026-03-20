@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', '.claude'] },
+  { ignores: ['dist', 'coverage', '.claude', 'supabase/functions'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

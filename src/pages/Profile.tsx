@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProfileByUsername } from '../api/getProfileByUsername';
 import { getUserScores } from '../api/getUserScores';
@@ -8,6 +8,7 @@ import { Database } from '../types/database.types';
 import { useAuth } from '../contexts/AuthContext';
 import supabase from '../utils/supabase';
 import { uploadAvatar } from '../api/uploadAvatar';
+import { uploadCardBack } from '../api/uploadCardBack';
 import { queryClient } from '../lib/queryClient';
 import { queryKeys } from '../lib/queryKeys';
 import { COUNTRIES, getFlagEmoji, getCountryName } from '../utils/countries';
@@ -18,10 +19,14 @@ type Score = Database['public']['Tables']['scores']['Row'];
 export const Profile = () => {
   const { username } = useParams({ strict: false }) as { username: string };
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cardBackInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as { upgraded?: string };
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(search.upgraded === 'true');
 
   const {
     data: profile,
@@ -107,7 +112,44 @@ export const Profile = () => {
     },
   });
 
+  const cardBackMutation = useMutation({
+    mutationFn: async ({ file, profileId }: { file: File; profileId: string }) => {
+      if (!user || user.id !== profileId) {
+        throw new Error('You can only update your own card back');
+      }
+      const { publicUrl } = await uploadCardBack(file, profileId);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ card_back_url: publicUrl })
+        .eq('id', profileId);
+      if (error) throw error;
+      return publicUrl;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(username!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileById(user!.id) });
+    },
+  });
+
   const isOwnProfile = user?.id === profile?.id;
+
+  const handleStartCheckout = async () => {
+    if (!user) return;
+    setCheckoutLoading(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const { data: urlData } = await supabase.functions.invoke('create-checkout-session', {
+        body: { origin: window.location.origin },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (urlData?.url) {
+        window.location.href = urlData.url;
+      }
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   const handleAvatarClick = () => {
     if (isOwnProfile && fileInputRef.current) {
@@ -119,6 +161,12 @@ export const Profile = () => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
     avatarMutation.mutate({ file, profileId: profile.id });
+  };
+
+  const handleCardBackChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    cardBackMutation.mutate({ file, profileId: profile.id });
   };
 
   const filteredCountries = COUNTRIES.filter(
@@ -285,6 +333,84 @@ export const Profile = () => {
           </div>
         )}
       </div>
+
+      {/* Premium upgrade success banner */}
+      {showUpgradeSuccess && (
+        <div className="mx-auto mb-6 w-full max-w-xs rounded-md border border-green-600 bg-green-900/30 px-4 py-3 text-center text-sm text-green-300">
+          <p className="font-semibold">Payment received!</p>
+          <p className="mt-1">Your premium features are now active.</p>
+          <button
+            className="mt-2 text-xs text-green-400 underline"
+            onClick={() => setShowUpgradeSuccess(false)}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Premium card back section (own profile only) */}
+      {isOwnProfile && (
+        <div className="mx-auto mb-8 w-full max-w-xs">
+          {profile.is_premium ? (
+            <div className="rounded-md border border-amber-600/50 bg-amber-900/20 p-4">
+              <p className="mb-3 text-sm font-semibold text-amber-400">✨ Premium — Custom Card Back</p>
+              {profile.card_back_url ? (
+                <div className="mb-3 flex items-center gap-3">
+                  <img
+                    src={profile.card_back_url}
+                    alt="Your card back"
+                    className="h-16 w-11 rounded-md border border-amber-600/40 object-cover"
+                  />
+                  <span className="text-xs text-gray-400">Current card back</span>
+                </div>
+              ) : (
+                <p className="mb-3 text-xs text-gray-400">No custom card back set yet.</p>
+              )}
+              <button
+                className="w-full rounded-md border border-amber-600/50 px-3 py-2 text-sm text-amber-300 transition-colors hover:border-amber-400 hover:text-amber-200"
+                onClick={() => cardBackInputRef.current?.click()}
+                disabled={cardBackMutation.isPending}
+              >
+                {cardBackMutation.isPending
+                  ? 'Uploading...'
+                  : profile.card_back_url
+                    ? 'Change Card Back'
+                    : 'Upload Card Back'}
+              </button>
+              {cardBackMutation.isError && (
+                <p className="mt-2 text-xs text-red-400">
+                  {(cardBackMutation.error as Error).message}
+                </p>
+              )}
+              <input
+                type="file"
+                ref={cardBackInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleCardBackChange}
+                disabled={cardBackMutation.isPending}
+              />
+            </div>
+          ) : (
+            <div className="rounded-md border border-gray-600 p-4 text-center">
+              <p className="mb-1 text-sm font-semibold text-gray-200">✨ Premium Card Backs</p>
+              <p className="mb-3 text-xs text-gray-400">
+                Upload any image as your card back — visible in all your games.
+              </p>
+              <button
+                className="w-full rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-500 disabled:opacity-60"
+                onClick={handleStartCheckout}
+                disabled={checkoutLoading || !user}
+              >
+                {checkoutLoading ? 'Redirecting...' : 'Upgrade — $5 lifetime'}
+              </button>
+              {!user && (
+                <p className="mt-2 text-xs text-gray-500">Sign in to upgrade</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Beerdle Stats Section */}
       {beerdleStats && beerdleStats.totalGames > 0 && (

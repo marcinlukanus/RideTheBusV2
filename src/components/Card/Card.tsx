@@ -7,6 +7,7 @@ export type CardProps = {
   suit: 'HEARTS' | 'DIAMONDS' | 'CLUBS' | 'SPADES';
   rank: string;
   showCardBack: boolean;
+  cardBackUrl?: string | null;
 };
 
 const renderCenterSuit = (suit: string) => {
@@ -39,7 +40,7 @@ const suitSymbol = (suit: string) => {
   }
 };
 
-export const Card = ({ rank, showCardBack, suit }: CardProps) => {
+export const Card = ({ rank, showCardBack, suit, cardBackUrl }: CardProps) => {
   const cornerText = `${rank}${suitSymbol(suit)}`;
 
   const color = suit === 'HEARTS' || suit === 'DIAMONDS' ? 'red' : 'black';
@@ -73,7 +74,13 @@ export const Card = ({ rank, showCardBack, suit }: CardProps) => {
           </div>
         </div>
 
-        <div className="card-back absolute h-full w-full rotate-y-180 overflow-hidden rounded-[10px] bg-white shadow-lg backface-hidden before:absolute before:left-0 before:h-[200%] before:w-[200%] before:bg-gradient-to-b before:from-[#ffffff] before:via-[#ffd700] before:to-[#d99200] before:shadow-lg after:pointer-events-none after:absolute after:top-0 after:left-0 after:h-full after:w-full after:bg-radial after:from-[rgba(255,255,255,0.05)] after:via-transparent after:to-transparent" />
+        {cardBackUrl ? (
+          <div className="card-back absolute h-full w-full rotate-y-180 overflow-hidden rounded-[10px] shadow-lg backface-hidden">
+            <img src={cardBackUrl} alt="Card back" className="h-full w-full object-cover" />
+          </div>
+        ) : (
+          <div className="card-back absolute h-full w-full rotate-y-180 overflow-hidden rounded-[10px] bg-white shadow-lg backface-hidden before:absolute before:left-0 before:h-[200%] before:w-[200%] before:bg-gradient-to-b before:from-[#ffffff] before:via-[#ffd700] before:to-[#d99200] before:shadow-lg after:pointer-events-none after:absolute after:top-0 after:left-0 after:h-full after:w-full after:bg-radial after:from-[rgba(255,255,255,0.05)] after:via-transparent after:to-transparent" />
+        )}
       </div>
     </div>
   );
