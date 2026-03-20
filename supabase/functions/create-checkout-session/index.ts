@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
       cancel_url: username ? `${origin}/${username}/profile` : `${origin}/`,
       customer_email: user.email,
       metadata: { userId: user.id },
+      allow_promotion_codes: true,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
