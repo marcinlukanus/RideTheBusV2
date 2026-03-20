@@ -1,5 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Game } from '../components/Game/Game';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { getProfileById } from '../api/getProfileById';
+import { queryKeys } from '../lib/queryKeys';
+
+const PREMIUM_BANNER_KEY = 'premium_banner_dismissed';
 
 export const Route = createFileRoute('/')({
   head: () => ({
@@ -17,12 +24,71 @@ export const Route = createFileRoute('/')({
 });
 
 function HomePage() {
+  const { user } = useAuth();
+  const [showBanner, setShowBanner] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: queryKeys.profileById(user?.id ?? ''),
+    queryFn: () => getProfileById(user!.id),
+    enabled: !!user?.id,
+  });
+
+  useEffect(() => {
+    if (localStorage.getItem(PREMIUM_BANNER_KEY) !== '1') {
+      setShowBanner(true);
+    }
+  }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem(PREMIUM_BANNER_KEY, '1');
+    setShowBanner(false);
+  };
+
+  const isPremium = profile?.is_premium ?? false;
+
   return (
     <div>
       <h1 className="mb-2 text-4xl leading-tight font-bold md:text-5xl">Ride The Bus</h1>
       <h4 className="mt-0 mb-6 text-xl italic md:text-2xl">
         The best single-player drinking game around
       </h4>
+
+      {showBanner && !isPremium && (
+        <div className="mx-auto mb-6 flex max-w-lg items-start justify-between gap-3 rounded-lg border border-amber-600/50 bg-amber-900/20 px-4 py-3 text-sm">
+          <div>
+            <p className="font-semibold text-amber-400">✨ Premium Card Backs are here</p>
+            <p className="mt-0.5 text-gray-300">
+              Upload any image as your card back for $5 — lifetime access.{' '}
+              {user ? (
+                <Link
+                  to="/$username/profile"
+                  params={{ username: profile?.username ?? '' }}
+                  className="text-amber-400 underline hover:text-amber-300"
+                  onClick={handleDismiss}
+                >
+                  Upgrade on your profile
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="text-amber-400 underline hover:text-amber-300"
+                  onClick={handleDismiss}
+                >
+                  Sign in to upgrade
+                </Link>
+              )}
+            </p>
+          </div>
+          <button
+            className="mt-0.5 shrink-0 text-gray-400 hover:text-white"
+            onClick={handleDismiss}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <Game />
     </div>
   );
