@@ -32,5 +32,5 @@ export const uploadCardBack = async (file: File, userId: string) => {
     data: { publicUrl },
   } = supabase.storage.from('card-backs').getPublicUrl(filePath);
 
-  return { publicUrl };
+  return { publicUrl: `${publicUrl}?t=${Date.now()}` };
 };
