@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import supabase from '../utils/supabase';
 import { uploadAvatar } from '../api/uploadAvatar';
 import { uploadCardBack } from '../api/uploadCardBack';
+import { Card } from '../components/Card/Card';
 import { queryClient } from '../lib/queryClient';
 import { queryKeys } from '../lib/queryKeys';
 import { COUNTRIES, getFlagEmoji, getCountryName } from '../utils/countries';
@@ -25,6 +26,7 @@ export const Profile = () => {
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [cardPreviewFlipped, setCardPreviewFlipped] = useState(true);
   const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
 
   useEffect(() => {
@@ -373,12 +375,20 @@ export const Profile = () => {
             <div className="rounded-md border border-amber-600/50 bg-amber-900/20 p-4">
               <p className="mb-3 text-sm font-semibold text-amber-400">✨ Premium — Custom Card Back</p>
               {profile.card_back_url ? (
-                <div className="mb-3 flex items-center gap-3">
-                  <img
-                    src={profile.card_back_url}
-                    alt="Your card back"
-                    className="h-28 w-20 rounded-md border border-amber-600/40 object-cover"
-                  />
+                <div className="mb-3 flex flex-col items-center gap-2">
+                  <button
+                    className="cursor-pointer"
+                    onClick={() => setCardPreviewFlipped((f) => !f)}
+                    aria-label="Flip card preview"
+                  >
+                    <Card
+                      suit="CLUBS"
+                      rank="A"
+                      showCardBack={cardPreviewFlipped}
+                      cardBackUrl={profile.card_back_url}
+                    />
+                  </button>
+                  <p className="text-xs text-gray-500">Click to flip</p>
                 </div>
               ) : (
                 <p className="mb-3 text-xs text-gray-400">No custom card back set yet.</p>
