@@ -1,5 +1,7 @@
 # Ride The Bus
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/bf544067-d248-4b98-a56d-1ffc26dc8af5/deploy-status)](https://app.netlify.com/projects/ridethebusv2/deploys)
+
 The classic drinking card game, free in your browser — [ridethebus.party](https://ridethebus.party)
 
 ## What it is
