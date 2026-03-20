@@ -76,39 +76,37 @@ function HomePage() {
       </h4>
 
       {showBanner && !isPremium && (
-        <div className="mx-auto mb-6 flex max-w-lg items-start justify-between gap-3 rounded-lg border border-amber-600/50 bg-amber-900/20 px-4 py-3 text-sm">
-          <div>
-            <p className="font-semibold text-amber-400">✨ Premium Card Backs are here</p>
-            <p className="mt-0.5 text-gray-300">
-              Upload any image as your card back for $5 — lifetime access.
-            </p>
-            <p className="mt-1">
-              {user ? (
-                <button
-                  className="text-amber-400 underline hover:text-amber-300 disabled:opacity-60"
-                  onClick={handleUpgrade}
-                  disabled={checkoutLoading}
-                >
-                  {checkoutLoading ? 'Redirecting...' : 'Upgrade for $5'}
-                </button>
-              ) : (
-                <Link
-                  to="/login"
-                  className="text-amber-400 underline hover:text-amber-300"
-                  onClick={handleDismiss}
-                >
-                  Sign in to upgrade
-                </Link>
-              )}
-            </p>
-          </div>
+        <div className="relative mb-6 max-w-sm rounded-lg border border-amber-600/50 bg-amber-900/20 px-6 py-3 text-sm">
           <button
-            className="mt-0.5 shrink-0 text-gray-400 hover:text-white"
+            className="absolute top-2 right-3 text-gray-400 hover:text-white"
             onClick={handleDismiss}
             aria-label="Dismiss"
           >
             ✕
           </button>
+          <p className="font-semibold text-amber-400">✨ Premium Card Backs are here</p>
+          <p className="mt-0.5 text-gray-300">
+            Upload any image as your card back for $5 — lifetime access.
+          </p>
+          <p className="mt-1">
+            {user ? (
+              <button
+                className="text-amber-400 underline hover:text-amber-300 disabled:opacity-60"
+                onClick={handleUpgrade}
+                disabled={checkoutLoading}
+              >
+                {checkoutLoading ? 'Redirecting...' : 'Upgrade for $5'}
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="text-amber-400 underline hover:text-amber-300"
+                onClick={handleDismiss}
+              >
+                Sign in to upgrade
+              </Link>
+            )}
+          </p>
         </div>
       )}
 
