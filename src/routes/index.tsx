@@ -80,7 +80,9 @@ function HomePage() {
           <div>
             <p className="font-semibold text-amber-400">✨ Premium Card Backs are here</p>
             <p className="mt-0.5 text-gray-300">
-              Upload any image as your card back for $5 — lifetime access.{' '}
+              Upload any image as your card back for $5 — lifetime access.
+            </p>
+            <p className="mt-1">
               {user ? (
                 <button
                   className="text-amber-400 underline hover:text-amber-300 disabled:opacity-60"
