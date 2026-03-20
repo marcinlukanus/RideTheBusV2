@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProfileByUsername } from '../api/getProfileByUsername';
 import { getUserScores } from '../api/getUserScores';
@@ -22,11 +22,15 @@ export const Profile = () => {
   const cardBackInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { upgraded?: string };
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(search.upgraded === 'true');
+  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('upgraded') === 'true') setShowUpgradeSuccess(true);
+  }, []);
 
   const {
     data: profile,
