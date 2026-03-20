@@ -132,6 +132,20 @@ export const Profile = () => {
     },
   });
 
+  const removeCardBackMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ card_back_url: null })
+        .eq('id', profile!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(username!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileById(user!.id) });
+    },
+  });
+
   const cardBackMutation = useMutation({
     mutationFn: async ({ file, profileId }: { file: File; profileId: string }) => {
       if (!user || user.id !== profileId) {
@@ -388,7 +402,6 @@ export const Profile = () => {
                       cardBackUrl={profile.card_back_url}
                     />
                   </button>
-                  <p className="text-xs text-gray-500">Click to flip</p>
                 </div>
               ) : (
                 <p className="mb-3 text-xs text-gray-400">No custom card back set yet.</p>
@@ -410,25 +423,36 @@ export const Profile = () => {
                   </button>
                 </div>
               ) : (
-                <button
-                  className="w-full rounded-md border border-amber-600/50 px-3 py-2 text-sm text-amber-300 transition-colors hover:border-amber-400 hover:text-amber-200 disabled:opacity-60"
-                  onClick={() => cardBackInputRef.current?.click()}
-                  disabled={cardBackMutation.isPending}
-                >
-                  {cardBackMutation.isPending ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Uploading...
-                    </span>
-                  ) : profile.card_back_url ? (
-                    'Change Card Back'
-                  ) : (
-                    'Upload Card Back'
+                <div className="flex flex-col gap-2">
+                  <button
+                    className="w-full rounded-md border border-amber-600/50 px-3 py-2 text-sm text-amber-300 transition-colors hover:border-amber-400 hover:text-amber-200 disabled:opacity-60"
+                    onClick={() => cardBackInputRef.current?.click()}
+                    disabled={cardBackMutation.isPending || removeCardBackMutation.isPending}
+                  >
+                    {cardBackMutation.isPending ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Uploading...
+                      </span>
+                    ) : profile.card_back_url ? (
+                      'Change Card Back'
+                    ) : (
+                      'Upload Card Back'
+                    )}
+                  </button>
+                  {profile.card_back_url && (
+                    <button
+                      className="w-full rounded-md border border-gray-600 px-3 py-2 text-sm text-gray-400 transition-colors hover:border-gray-400 hover:text-gray-200 disabled:opacity-60"
+                      onClick={() => removeCardBackMutation.mutate()}
+                      disabled={removeCardBackMutation.isPending || cardBackMutation.isPending}
+                    >
+                      {removeCardBackMutation.isPending ? 'Removing...' : 'Remove Card Back'}
+                    </button>
                   )}
-                </button>
+                </div>
               )}
               <input
                 type="file"
