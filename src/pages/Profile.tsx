@@ -466,8 +466,11 @@ export const Profile = () => {
           ) : (
             <div className="rounded-md border border-gray-600 p-4 text-center">
               <p className="mb-1 text-sm font-semibold text-gray-200">🍻 Go Premium</p>
-              <p className="mb-3 text-xs text-gray-400">
+              <p className="mb-1 text-xs text-gray-400">
                 Custom card backs, No Hands mode, and more (hopefully).
+              </p>
+              <p className="mb-3 text-xs text-gray-400">
+                Use code <span className="font-bold text-amber-400">HOTDOG</span> for 50% off.
               </p>
               <button
                 className="w-full rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-500 disabled:opacity-60"
