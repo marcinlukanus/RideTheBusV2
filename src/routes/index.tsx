@@ -84,7 +84,7 @@ function HomePage() {
           >
             ✕
           </button>
-          <p className="font-semibold text-amber-400">💎 Go Premium</p>
+          <p className="font-semibold text-amber-400">🍻 Go Premium</p>
           <p className="mt-0.5 text-gray-300">Custom card backs, No Hands mode, and more (hopefully).</p>
           <p className="mt-1 text-gray-300">
             Use <span className="font-bold text-amber-400">HOTDOG</span> for 50% off
