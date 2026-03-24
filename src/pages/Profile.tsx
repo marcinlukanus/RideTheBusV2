@@ -387,7 +387,7 @@ export const Profile = () => {
         <div className="mx-auto mb-8 w-full max-w-xs">
           {profile.is_premium ? (
             <div className="rounded-md border border-amber-600/50 bg-amber-900/20 p-4">
-              <p className="mb-3 text-sm font-semibold text-amber-400">✨ Premium — Custom Card Back</p>
+              <p className="mb-3 text-sm font-semibold text-amber-400">💎 Premium — Custom Card Back</p>
               {profile.card_back_url ? (
                 <div className="mb-3 flex flex-col items-center gap-2">
                   <button
@@ -465,9 +465,9 @@ export const Profile = () => {
             </div>
           ) : (
             <div className="rounded-md border border-gray-600 p-4 text-center">
-              <p className="mb-1 text-sm font-semibold text-gray-200">✨ Premium Card Backs</p>
+              <p className="mb-1 text-sm font-semibold text-gray-200">💎 Go Premium</p>
               <p className="mb-3 text-xs text-gray-400">
-                Upload any image as your card back — visible in all your games.
+                Custom card backs plus No Hands mode. Call your shots and let the bus drive itself.
               </p>
               <button
                 className="w-full rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-500 disabled:opacity-60"

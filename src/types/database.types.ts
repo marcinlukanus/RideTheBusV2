@@ -145,6 +145,7 @@ export type Database = {
           created_at: string;
           id: string;
           is_premium: boolean;
+          no_hands_preset: Json | null;
           updated_at: string;
           username: string;
         };
@@ -156,6 +157,7 @@ export type Database = {
           created_at?: string;
           id: string;
           is_premium?: boolean;
+          no_hands_preset?: Json | null;
           updated_at?: string;
           username: string;
         };
@@ -167,6 +169,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           is_premium?: boolean;
+          no_hands_preset?: Json | null;
           updated_at?: string;
           username?: string;
         };
