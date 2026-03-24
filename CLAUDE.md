@@ -107,6 +107,9 @@ Buttons in `Game.tsx` tied to game state (Red/Black, Higher/Lower/Same, Inside/O
 intentionally do **not** use the Button component. Their colors reflect game rules, not brand
 theme, and should stay independent.
 
+## Copy & text rules
+- **Never use em dashes** (`—`) anywhere in UI copy, button text, or JSX strings. Use a regular hyphen, reword the sentence, or just end it.
+
 ## Git & PR workflow
 1. `npx tsc --noEmit` — must be clean
 2. Stage specific files by name (never `git add -A`)
