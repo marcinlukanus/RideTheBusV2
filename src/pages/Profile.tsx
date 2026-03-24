@@ -477,7 +477,7 @@ export const Profile = () => {
                 onClick={handleStartCheckout}
                 disabled={checkoutLoading || !user}
               >
-                {checkoutLoading ? 'Redirecting...' : 'Upgrade — $5 lifetime'}
+                {checkoutLoading ? 'Redirecting...' : 'Upgrade for $5 lifetime'}
               </button>
               {!user && (
                 <p className="mt-2 text-xs text-gray-500">Sign in to upgrade</p>
