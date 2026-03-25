@@ -298,7 +298,7 @@ export const Profile = () => {
                 onClick={() => setShowCountryPicker(true)}
               >
                 {profile.country
-                  ? `${getFlagEmoji(profile.country)} ${getCountryName(profile.country)} — Change`
+                  ? `${getFlagEmoji(profile.country)} ${getCountryName(profile.country)} (change)`
                   : '🌍 Set your country'}
               </button>
             ) : (
@@ -387,7 +387,7 @@ export const Profile = () => {
         <div className="mx-auto mb-8 w-full max-w-xs">
           {profile.is_premium ? (
             <div className="rounded-md border border-amber-600/50 bg-amber-900/20 p-4">
-              <p className="mb-3 text-sm font-semibold text-amber-400">🍻 Premium — Custom Card Back</p>
+              <p className="mb-3 text-sm font-semibold text-amber-400">🍻 Premium: Custom Card Back</p>
               {profile.card_back_url ? (
                 <div className="mb-3 flex flex-col items-center gap-2">
                   <button
