@@ -6,10 +6,17 @@ import {
   validateFinalRound,
 } from '../../utils/gameValidation';
 
-type Suit = 'HEARTS' | 'DIAMONDS' | 'CLUBS' | 'SPADES';
+export type Suit = 'HEARTS' | 'DIAMONDS' | 'CLUBS' | 'SPADES';
 export type RedOrBlack = 'red' | 'black';
 export type HigherLowerOrSame = 'higher' | 'lower' | 'same';
 export type InsideOutsideOrSame = 'inside' | 'outside' | 'same';
+
+export type NoHandsPreset = {
+  round1: RedOrBlack;
+  round2: HigherLowerOrSame;
+  round3: InsideOutsideOrSame;
+  round4: Suit;
+};
 
 type Value = {
   rank: string;

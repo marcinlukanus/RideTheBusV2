@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   HigherLowerOrSame,
   InsideOutsideOrSame,
+  NoHandsPreset,
   RedOrBlack,
   suits,
   useGameState,
@@ -16,22 +17,33 @@ import { postScore } from '../../api/postScore';
 import { LongestRides } from '../LongestRides/LongestRides';
 import { postCardCounts } from '../../api/postCardCounts';
 import { useAuth } from '../../contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProfileById } from '../../api/getProfileById';
 import { queryKeys } from '../../lib/queryKeys';
 import { getConfettiColors } from '../../utils/countryColors';
 import { Link } from '@tanstack/react-router';
 import { MedalTable } from '../MedalTable/MedalTable';
+import { NoHandsMode } from './NoHandsMode';
+import supabase from '../../utils/supabase';
+import { queryClient } from '../../lib/queryClient';
 
 const COUNTRY_PROMPT_KEY = 'country_prompt_dismissed';
+const NO_HANDS_ACTIVE_KEY = 'no_hands_active';
+// Delay between auto-played rounds (ms)
+const ROUND_DELAY = 1200;
+// Longer pause after an incorrect guess so the user can take their drink
+const DRINK_DELAY = 3000;
 
 export const Game = () => {
   const { user } = useAuth();
   const { width, height } = useDocumentSize();
   const [promptDismissed, setPromptDismissed] = useState(true);
+  const [noHandsActive, setNoHandsActive] = useState(false);
+  const noHandsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setPromptDismissed(localStorage.getItem(COUNTRY_PROMPT_KEY) === '1');
+    setNoHandsActive(localStorage.getItem(NO_HANDS_ACTIVE_KEY) === '1');
   }, []);
 
   const { gameState, dispatch, finalRound, firstRound, secondRound, thirdRound } = useGameState();
@@ -42,6 +54,27 @@ export const Game = () => {
     queryFn: () => getProfileById(user!.id),
     enabled: !!user?.id,
   });
+
+  const noHandsPreset = (currentProfile?.no_hands_preset as NoHandsPreset | null | undefined) ?? null;
+
+  const noHandsPresetMutation = useMutation({
+    mutationFn: async (preset: NoHandsPreset) => {
+      if (!user) throw new Error('Not logged in');
+      const { error } = await supabase
+        .from('profiles')
+        .update({ no_hands_preset: preset })
+        .eq('id', user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profileById(user!.id) });
+    },
+  });
+
+  const handleToggleNoHands = (active: boolean) => {
+    setNoHandsActive(active);
+    localStorage.setItem(NO_HANDS_ACTIVE_KEY, active ? '1' : '0');
+  };
 
   const userCountry = currentProfile?.country ?? null;
   const isPerfectRide = gameState.hasWon && gameState.timesRedrawn === 0;
@@ -84,6 +117,40 @@ export const Game = () => {
       postCardCounts(gameState.cards);
     }
   }, [gameState.isGameOver, gameState.cards]);
+
+  // No Hands: auto-play the current round after a brief pause
+  useEffect(() => {
+    if (!noHandsActive || !noHandsPreset || gameState.cards.length === 0 || gameState.isGameOver) {
+      return;
+    }
+    if (noHandsTimerRef.current) clearTimeout(noHandsTimerRef.current);
+    noHandsTimerRef.current = setTimeout(() => {
+      switch (gameState.currentRound) {
+        case 1: firstRound(noHandsPreset.round1); break;
+        case 2: secondRound(noHandsPreset.round2); break;
+        case 3: thirdRound(noHandsPreset.round3); break;
+        case 4: finalRound(noHandsPreset.round4); break;
+      }
+    }, ROUND_DELAY);
+    return () => {
+      if (noHandsTimerRef.current) clearTimeout(noHandsTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noHandsActive, noHandsPreset, gameState.currentRound, gameState.cards.length, gameState.isGameOver]);
+
+  // No Hands: auto-redraw after a miss — pause so the user can drink, then loop again.
+  // On a win, stop and let the user restart manually.
+  useEffect(() => {
+    if (!noHandsActive || !gameState.isGameOver || gameState.hasWon) return;
+    if (noHandsTimerRef.current) clearTimeout(noHandsTimerRef.current);
+    noHandsTimerRef.current = setTimeout(() => {
+      dispatch({ type: 'DRAW_CARDS', amountToDraw: 4, resetScore: false });
+    }, DRINK_DELAY);
+    return () => {
+      if (noHandsTimerRef.current) clearTimeout(noHandsTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noHandsActive, gameState.isGameOver, gameState.hasWon]);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {
@@ -180,7 +247,7 @@ export const Game = () => {
           ))}
         </div>
 
-        {gameState.isGameOver && (
+        {gameState.isGameOver && (!noHandsActive || gameState.hasWon) && (
           <div className="mt-8 flex">
             <Button
               variant="ghost"
@@ -197,12 +264,18 @@ export const Game = () => {
           </div>
         )}
 
-        {!gameState.isGameOver && <div className="mt-8 flex gap-5">{renderButtons()}</div>}
+        {!gameState.isGameOver && !noHandsActive && (
+          <div className="mt-8 flex gap-5">{renderButtons()}</div>
+        )}
 
         {gameState.isGameOver && (
           <p className="mt-8 text-lg font-bold">
             {gameState.hasWon ? 'You won!' : 'Take a drink!'}
           </p>
+        )}
+
+        {noHandsActive && !gameState.isGameOver && (
+          <p className="mt-8 text-sm text-amber-400/70 italic">No Hands is driving...</p>
         )}
 
         {gameState.cards.length > 0 && (
@@ -233,6 +306,16 @@ export const Game = () => {
               ✕
             </button>
           </div>
+        )}
+
+        {currentProfile?.is_premium && user && (
+          <NoHandsMode
+            isActive={noHandsActive}
+            preset={noHandsPreset}
+            isSaving={noHandsPresetMutation.isPending}
+            onToggle={handleToggleNoHands}
+            onSavePreset={(preset) => noHandsPresetMutation.mutate(preset)}
+          />
         )}
 
         <div className="mt-8 flex flex-wrap justify-center gap-5">

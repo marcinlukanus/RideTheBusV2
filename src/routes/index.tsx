@@ -7,7 +7,7 @@ import { getProfileById } from '../api/getProfileById';
 import { queryKeys } from '../lib/queryKeys';
 import supabase from '../utils/supabase';
 
-const PREMIUM_BANNER_KEY = 'premium_banner_dismissed';
+const PREMIUM_BANNER_KEY = 'premium_banner_dismissed_v2';
 
 export const Route = createFileRoute('/')({
   head: () => ({
@@ -84,9 +84,10 @@ function HomePage() {
           >
             ✕
           </button>
-          <p className="font-semibold text-amber-400">✨ Premium Card Backs are here</p>
-          <p className="mt-0.5 text-gray-300">
-            Upload any image as your card back for $5 — lifetime access.
+          <p className="font-semibold text-amber-400">🍻 Go Premium</p>
+          <p className="mt-0.5 text-gray-300">Custom card backs, No Hands mode, and more (hopefully).</p>
+          <p className="mt-1 text-gray-300">
+            Use <span className="font-bold text-amber-400">HOTDOG</span> for 50% off
           </p>
           <p className="mt-1">
             {user ? (

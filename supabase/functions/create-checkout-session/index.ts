@@ -67,8 +67,8 @@ Deno.serve(async (req) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'Ride The Bus — Lifetime Premium',
-              description: 'Upload a custom card back image for all your games',
+              name: 'Ride The Bus Lifetime Premium',
+              description: 'Custom card backs, No Hands mode, and more. One-time payment.',
             },
             unit_amount: 500, // $5.00
           },
