@@ -99,12 +99,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         name: 'description',
         content:
-          'Play Ride The Bus online – the classic drinking card game, free in your browser. Also known as Fuck the Bus. No deck, no download, just drinks.',
+          'Play Ride The Bus online – the classic drinking card game, free in your browser. No deck, no download, just drinks.',
       },
       {
         name: 'keywords',
         content:
-          'ride the bus, ride the bus drinking game, ride the bus card game, fuck the bus, bus drinking game, riding the bus drinking game, ride the bus rules, how to play ride the bus, online drinking game, card drinking game, party drinking game, beerdle, party bus drinking game, multiplayer drinking game',
+          'ride the bus drinking game, ride the bus, ride the bus card game, ride the bus online, bus drinking game, riding the bus drinking game, ride the bus rules, how to play ride the bus, online drinking game, card drinking game, party drinking game, beerdle, party bus drinking game, multiplayer drinking game',
       },
       { name: 'author', content: 'Marcin Lukanus' },
       { property: 'og:site_name', content: 'Ride The Bus' },
@@ -114,7 +114,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         property: 'og:description',
         content:
-          'Play Ride The Bus (aka Fuck the Bus) free in your browser – the classic drinking card game. No deck needed. Easy to learn, hard to master.',
+          'Play the Ride The Bus drinking game free in your browser – the classic card game. No deck needed. Easy to learn, hard to master.',
       },
       {
         property: 'og:image',
@@ -126,7 +126,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         name: 'twitter:description',
         content:
-          'Play Ride The Bus (aka Fuck the Bus) free in your browser – the classic drinking card game. No deck needed.',
+          'Play the Ride The Bus drinking game free in your browser – the classic card game. No deck needed.',
       },
       {
         name: 'twitter:image',
