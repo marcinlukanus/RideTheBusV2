@@ -1,7 +1,5 @@
-import { useEffect } from 'react';
 import { Card } from '../Card/Card';
 import { usePartyGameState } from './usePartyGameState';
-import supabase from '../../utils/supabase';
 import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
 import { useDocumentSize } from '../../helpers/hooks/useDocumentSize';
@@ -12,8 +10,8 @@ import {
   suits,
   Card as GameCard,
 } from '../Game/useGameState';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import type { Database } from '../../types/database.types';
+import { Button } from '../ui/Button';
+import { Panel } from '../ui/Panel';
 
 type PartyGameProps = {
   roomId: string;
@@ -29,88 +27,17 @@ type PlayerState = {
   timesRedrawn: number;
 };
 
-type RealtimePlayerPayload = RealtimePostgresChangesPayload<
-  Database['public']['Tables']['party_bus_players']['Row']
-> & {
-  new: Database['public']['Tables']['party_bus_players']['Row'];
-};
-
 export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
   const { width, height } = useDocumentSize();
   const {
     gameState,
     playersState,
-    dispatch,
     firstRound,
     secondRound,
     thirdRound,
     finalRound,
     redrawCards,
   } = usePartyGameState(roomId, nickname);
-
-  useEffect(() => {
-    const initializeGame = async () => {
-      try {
-        // 1. First fetch all players' states
-        const { data: players } = await supabase
-          .from('party_bus_players')
-          .select('*')
-          .eq('room_id', roomId);
-
-        if (players) {
-          // Update state for each player
-          players.forEach((player) => {
-            if (player.game_state && player.nickname !== nickname) {
-              dispatch({
-                type: 'UPDATE_PLAYER_STATE',
-                nickname: player.nickname,
-                state: player.game_state as PlayerState,
-              });
-            }
-          });
-
-          // 2. Wait a bit to ensure player states are updated
-          await new Promise((resolve) => setTimeout(resolve, 100));
-
-          // 3. Draw initial cards using redrawCards (which handles state sync properly)
-          await redrawCards(false, true);
-        }
-      } catch (error) {
-        console.error('Error initializing game:', error);
-      }
-    };
-
-    // Initialize the game
-    initializeGame();
-
-    // Subscribe to room updates
-    const channel = supabase
-      .channel(`room:${roomId}`)
-      .on<RealtimePlayerPayload>(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'party_bus_players',
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload: RealtimePlayerPayload) => {
-          if (payload.new.game_state && payload.new.nickname !== nickname) {
-            const state = payload.new.game_state as PlayerState;
-            dispatch({
-              type: 'UPDATE_PLAYER_STATE',
-              nickname: payload.new.nickname,
-              state,
-            });
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {
@@ -182,7 +109,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
   };
 
   const renderPlayerGame = (playerState: PlayerState) => (
-    <div className="mb-8 rounded-lg bg-gray-800 p-6">
+    <Panel className="mb-4">
       <h3 className="mb-4 text-xl font-bold">{playerState.nickname}&apos;s Game</h3>
       <div className="flex flex-wrap justify-center gap-5">
         {playerState.cards.map((card: GameCard, index: number) => (
@@ -199,11 +126,10 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       )}
       <p className="mt-2 text-lg">Round: {playerState.currentRound}</p>
       <p className="mt-2 text-lg">Drinks taken: {playerState.timesRedrawn}</p>
-    </div>
+    </Panel>
   );
 
   const renderLeaderboard = () => {
-    // Get all players including current player
     const allPlayers = [
       {
         nickname,
@@ -219,26 +145,24 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       })),
     ];
 
-    // Check if all players have finished successfully
     const allFinished = allPlayers.every((player) => player.isGameOver && player.hasWon);
 
     if (!allFinished) return null;
 
-    // Sort players by score (times redrawn)
     const sortedPlayers = allPlayers.sort((a, b) => a.timesRedrawn - b.timesRedrawn);
     const winner = sortedPlayers[0];
     const isCurrentPlayerWinner = winner.nickname === nickname;
 
     return (
       <>
-        <div className="mt-12 rounded-lg bg-gray-800 p-8">
+        <Panel className="mt-12">
           <h2 className="mb-6 text-center text-3xl font-bold">🏆 Final Results 🏆</h2>
           <div className="space-y-4">
             {sortedPlayers.map((player, index) => (
               <div
                 key={player.nickname}
                 className={`flex items-center justify-between rounded-lg p-4 ${
-                  index === 0 ? 'bg-yellow-500/20' : 'bg-gray-700'
+                  index === 0 ? 'bg-yellow-500/20' : 'bg-surface-input'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -256,7 +180,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
             🎉 {winner.nickname} wins with {winner.timesRedrawn}{' '}
             {winner.timesRedrawn === 1 ? 'redraw' : 'redraws'}! 🎉
           </p>
-        </div>
+        </Panel>
         {isCurrentPlayerWinner &&
           createPortal(
             <Confetti
@@ -270,7 +194,6 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
     );
   };
 
-  // Check if all players have finished successfully
   const allPlayers = [
     { isGameOver: gameState.isGameOver, hasWon: gameState.hasWon },
     ...Object.values(playersState).map((state) => ({
@@ -300,12 +223,9 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
 
               {gameState.isGameOver && !gameState.hasWon && (
                 <div className="mt-8 flex">
-                  <button
-                    className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md active:translate-y-1"
-                    onClick={() => redrawCards(false)}
-                  >
+                  <Button variant="ghost" onClick={() => redrawCards(false)}>
                     Redraw Cards
-                  </button>
+                  </Button>
                 </div>
               )}
 

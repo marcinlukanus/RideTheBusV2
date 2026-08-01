@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useReducer, useEffect, useRef } from 'react';
 import {
   Card,
   RedOrBlack,
@@ -8,7 +8,7 @@ import {
 } from '../Game/useGameState';
 import supabase from '../../utils/supabase';
 
-type PlayerState = {
+export type PlayerState = {
   nickname: string;
   cards: Card[];
   currentRound: number;
@@ -17,7 +17,7 @@ type PlayerState = {
   timesRedrawn: number;
 };
 
-type PartyGameState = {
+export type PartyGameState = {
   cards: Card[];
   currentRound: number;
   hasWon: boolean;
@@ -25,30 +25,30 @@ type PartyGameState = {
   timesRedrawn: number;
 };
 
-type PlayersState = {
+export type PlayersState = {
   [nickname: string]: PlayerState;
 };
 
-type PartyGameAction =
-  | { type: 'DRAW_CARDS'; amountToDraw: number; resetScore: boolean }
+export type PartyGameAction =
+  | { type: 'DRAW_CARDS'; cards: Card[]; resetScore: boolean }
   | { type: 'ADVANCE_ROUND'; cardToFlip: number }
   | { type: 'GAME_OVER'; cardToFlip: number }
   | { type: 'WIN_GAME' }
   | { type: 'UPDATE_PLAYER_STATE'; nickname: string; state: PlayerState };
 
-type ReducerState = {
+export type PartyGameReducerState = {
   gameState: PartyGameState;
   playersState: PlayersState;
 };
 
-const reducer = (state: ReducerState, action: PartyGameAction): ReducerState => {
+export const partyGameReducer = (state: PartyGameReducerState, action: PartyGameAction): PartyGameReducerState => {
   switch (action.type) {
     case 'DRAW_CARDS':
       return {
         ...state,
         gameState: {
           ...state.gameState,
-          cards: drawCards(action.amountToDraw),
+          cards: action.cards,
           hasWon: false,
           isGameOver: false,
           currentRound: 1,
@@ -105,7 +105,7 @@ const reducer = (state: ReducerState, action: PartyGameAction): ReducerState => 
 };
 
 export const usePartyGameState = (roomId: string, nickname: string) => {
-  const [{ gameState, playersState }, dispatch] = useReducer(reducer, {
+  const [{ gameState, playersState }, dispatch] = useReducer(partyGameReducer, {
     gameState: {
       cards: [],
       currentRound: 1,
@@ -116,90 +116,132 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     playersState: {},
   });
 
-  const syncGameState = async (newState: PartyGameState, action: PartyGameAction) => {
-    try {
-      // Update local state first
-      dispatch(action);
+  // Ref so async callbacks always read the latest state without stale closures
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
 
-      // Then update remote state
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  // Ref so the subscribe callback always calls the latest initializeGame
+  // without needing to re-create the channel when the function reference changes.
+  const initializeGameRef = useRef<(() => Promise<void>) | null>(null);
+
+  useEffect(() => {
+    let initialized = false;
+
+    const channel = supabase
+      .channel(`party-game:${roomId}`)
+      .on('broadcast', { event: 'player_action' }, ({ payload }) => {
+        const { nickname: sender, newState } = payload as {
+          nickname: string;
+          newState: PlayerState;
+        };
+        if (sender !== nickname) {
+          dispatch({ type: 'UPDATE_PLAYER_STATE', nickname: sender, state: newState });
+        }
+      })
+      .subscribe(async (status) => {
+        // Wait for the channel to be fully subscribed before drawing and
+        // broadcasting the initial hand — send() is a no-op before this point.
+        if (status === 'SUBSCRIBED' && !initialized) {
+          initialized = true;
+          await initializeGameRef.current?.();
+        }
+      });
+
+    channelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      channelRef.current = null;
+    };
+  }, [roomId, nickname]);
+
+  // Broadcast current state to all players in the room.
+  // isCheckpoint=true also writes to DB so reconnecting players can recover.
+  const broadcastAndSync = async (newState: PartyGameState, isCheckpoint: boolean) => {
+    const fullState: PlayerState = { nickname, ...newState };
+
+    await channelRef.current?.send({
+      type: 'broadcast',
+      event: 'player_action',
+      payload: { nickname, newState: fullState },
+    });
+
+    if (isCheckpoint) {
       await supabase
         .from('party_bus_players')
-        .update({
-          game_state: {
-            nickname,
-            ...newState,
-          },
-        })
+        .update({ game_state: fullState })
         .eq('room_id', roomId)
         .eq('nickname', nickname);
-    } catch (error) {
-      console.error('Error syncing game state:', error);
     }
   };
 
   const redrawCards = async (hasWon: boolean, isInitialDraw: boolean = false) => {
-    // Draw new cards first
     const newCards = drawCards(4);
+    const current = gameStateRef.current;
+    const timesRedrawn = isInitialDraw ? 0 : hasWon ? 0 : current.timesRedrawn + 1;
 
-    // Create the new state
-    const newState = {
+    const newState: PartyGameState = {
       cards: newCards,
       currentRound: 1,
       hasWon: false,
       isGameOver: false,
-      timesRedrawn: isInitialDraw ? 0 : hasWon ? 0 : gameState.timesRedrawn + 1,
+      timesRedrawn,
     };
 
-    try {
-      // Update local state first
-      dispatch({
-        type: 'DRAW_CARDS',
-        amountToDraw: 4,
-        resetScore: hasWon || isInitialDraw,
-      });
-
-      // Wait a bit for state to update
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Then sync to Supabase with the complete state
-      await supabase
-        .from('party_bus_players')
-        .update({
-          game_state: {
-            nickname,
-            ...newState,
-            cards: newCards, // Use the new cards directly to ensure they're included
-          },
-        })
-        .eq('room_id', roomId)
-        .eq('nickname', nickname);
-    } catch (error) {
-      console.error('Error redrawing cards:', error);
-    }
+    dispatch({ type: 'DRAW_CARDS', cards: newCards, resetScore: hasWon || isInitialDraw });
+    await broadcastAndSync(newState, true);
   };
 
+  const initializeGame = async () => {
+    const { data: players } = await supabase
+      .from('party_bus_players')
+      .select('*')
+      .eq('room_id', roomId);
+
+    if (players) {
+      players.forEach((player) => {
+        if (player.game_state && player.nickname !== nickname) {
+          dispatch({
+            type: 'UPDATE_PLAYER_STATE',
+            nickname: player.nickname,
+            state: player.game_state as PlayerState,
+          });
+        }
+      });
+    }
+
+    await redrawCards(false, true);
+  };
+
+  // Keep the ref current so the subscribe callback always calls the latest closure.
+  initializeGameRef.current = initializeGame;
+
   const firstRound = async (color: RedOrBlack) => {
-    const card = gameState.cards[0];
+    const current = gameStateRef.current;
+    const card = current.cards[0];
     const isRed = card.suit === 'HEARTS' || card.suit === 'DIAMONDS';
     const isCorrect = isRed === (color === 'red');
 
-    const newState = {
-      ...gameState,
-      currentRound: isCorrect ? gameState.currentRound + 1 : gameState.currentRound,
+    const newState: PartyGameState = {
+      ...current,
+      currentRound: isCorrect ? current.currentRound + 1 : current.currentRound,
       isGameOver: !isCorrect,
       hasWon: false,
-      cards: gameState.cards.map((c, index) => (index === 0 ? { ...c, showCardBack: false } : c)),
+      cards: current.cards.map((c, i) => (i === 0 ? { ...c, showCardBack: false } : c)),
     };
 
-    await syncGameState(
-      newState,
+    dispatch(
       isCorrect ? { type: 'ADVANCE_ROUND', cardToFlip: 0 } : { type: 'GAME_OVER', cardToFlip: 0 },
     );
+    await broadcastAndSync(newState, !isCorrect);
   };
 
   const secondRound = async (guess: HigherLowerOrSame) => {
-    const firstCard = gameState.cards[0];
-    const secondCard = gameState.cards[1];
+    const current = gameStateRef.current;
+    const firstCard = current.cards[0];
+    const secondCard = current.cards[1];
 
     const isHigher = secondCard.values.numericValue > firstCard.values.numericValue;
     const isLower = secondCard.values.numericValue < firstCard.values.numericValue;
@@ -208,24 +250,25 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       (isLower && guess === 'lower') ||
       (firstCard.values.numericValue === secondCard.values.numericValue && guess === 'same');
 
-    const newState = {
-      ...gameState,
-      currentRound: isCorrect ? gameState.currentRound + 1 : gameState.currentRound,
+    const newState: PartyGameState = {
+      ...current,
+      currentRound: isCorrect ? current.currentRound + 1 : current.currentRound,
       isGameOver: !isCorrect,
       hasWon: false,
-      cards: gameState.cards.map((c, index) => (index === 1 ? { ...c, showCardBack: false } : c)),
+      cards: current.cards.map((c, i) => (i === 1 ? { ...c, showCardBack: false } : c)),
     };
 
-    await syncGameState(
-      newState,
+    dispatch(
       isCorrect ? { type: 'ADVANCE_ROUND', cardToFlip: 1 } : { type: 'GAME_OVER', cardToFlip: 1 },
     );
+    await broadcastAndSync(newState, !isCorrect);
   };
 
   const thirdRound = async (guess: InsideOutsideOrSame) => {
-    const firstCard = gameState.cards[0];
-    const secondCard = gameState.cards[1];
-    const thirdCard = gameState.cards[2];
+    const current = gameStateRef.current;
+    const firstCard = current.cards[0];
+    const secondCard = current.cards[1];
+    const thirdCard = current.cards[2];
 
     const firstValue = firstCard.values.numericValue;
     const secondValue = secondCard.values.numericValue;
@@ -243,37 +286,36 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
       (isOutside && guess === 'outside') ||
       (isSame && guess === 'same');
 
-    const newState = {
-      ...gameState,
-      currentRound: isCorrect ? gameState.currentRound + 1 : gameState.currentRound,
+    const newState: PartyGameState = {
+      ...current,
+      currentRound: isCorrect ? current.currentRound + 1 : current.currentRound,
       isGameOver: !isCorrect,
       hasWon: false,
-      cards: gameState.cards.map((c, index) => (index === 2 ? { ...c, showCardBack: false } : c)),
+      cards: current.cards.map((c, i) => (i === 2 ? { ...c, showCardBack: false } : c)),
     };
 
-    await syncGameState(
-      newState,
+    dispatch(
       isCorrect ? { type: 'ADVANCE_ROUND', cardToFlip: 2 } : { type: 'GAME_OVER', cardToFlip: 2 },
     );
+    await broadcastAndSync(newState, !isCorrect);
   };
 
   const finalRound = async (suit: string) => {
-    const card = gameState.cards[3];
+    const current = gameStateRef.current;
+    const card = current.cards[3];
     const isCorrect = card.suit === suit;
 
-    const newState = {
-      ...gameState,
+    const newState: PartyGameState = {
+      ...current,
       isGameOver: true,
       hasWon: isCorrect,
-      cards: gameState.cards.map((c, index) =>
-        index === 3 || isCorrect ? { ...c, showCardBack: false } : c,
+      cards: current.cards.map((c, i) =>
+        i === 3 || isCorrect ? { ...c, showCardBack: false } : c,
       ),
     };
 
-    await syncGameState(
-      newState,
-      isCorrect ? { type: 'WIN_GAME' } : { type: 'GAME_OVER', cardToFlip: 3 },
-    );
+    dispatch(isCorrect ? { type: 'WIN_GAME' } : { type: 'GAME_OVER', cardToFlip: 3 });
+    await broadcastAndSync(newState, true);
   };
 
   return {

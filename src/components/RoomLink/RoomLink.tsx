@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Button } from '../ui/Button';
+import { Panel } from '../ui/Panel';
 
 type RoomLinkProps = {
   roomId: string;
@@ -23,25 +25,22 @@ export const RoomLink = ({ roomId }: RoomLinkProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg bg-gray-800 p-4">
+    <Panel className="flex flex-col items-center gap-4">
       <h3 className="text-xl font-bold">Room Code: {roomId}</h3>
       <div className="flex items-center gap-2">
         <input
           type="text"
           value={roomUrl}
           readOnly
-          className="w-64 rounded-lg bg-gray-700 px-4 py-2 text-white sm:w-96"
+          className="w-64 rounded-lg bg-surface-input px-4 py-2 text-white sm:w-96"
         />
-        <button
-          onClick={copyToClipboard}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-        >
+        <Button variant="ghost" onClick={copyToClipboard}>
           {copied ? '✓ Copied!' : 'Copy Link'}
-        </button>
+        </Button>
       </div>
       <p className="text-sm text-gray-400">
         Share this link with your friends to invite them to the game!
       </p>
-    </div>
+    </Panel>
   );
 };
