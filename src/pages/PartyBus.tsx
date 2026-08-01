@@ -6,6 +6,8 @@ import { generateRoomId } from '../utils/generateRoomId';
 import { RoomLink } from '../components/RoomLink/RoomLink';
 import { Database } from '../types/database.types.ts';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { Button } from '../components/ui/Button';
+import { Panel } from '../components/ui/Panel';
 
 type NicknameModalProps = {
   onSubmit: (nickname: string) => Promise<string | undefined>;
@@ -54,18 +56,18 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
 
   return (
     <div className="bg-opacity-50 fixed inset-0 flex items-center justify-center bg-black">
-      <div className="w-96 rounded-lg bg-gray-800 p-6">
+      <Panel className="w-96">
         <h3 className="mb-4 text-xl font-bold">
           {isJoining ? 'Enter nickname to join' : 'Enter your nickname'}
         </h3>
-        <div className="flex flex-col gap-4 space-y-4">
+        <div className="flex flex-col gap-4">
           <input
             type="text"
-            className="w-full rounded-lg bg-gray-700 px-4 py-2 text-white"
+            className="w-full rounded-lg bg-surface-input px-4 py-2 text-white"
             value={nickname}
             onChange={(e) => {
               setNickname(e.target.value);
-              setError(''); // Clear error when user types
+              setError('');
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && nickname && !isSubmitting) {
@@ -78,15 +80,11 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
             disabled={isSubmitting}
           />
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <button
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
+          <Button variant="primary" className="w-full" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Please wait...' : isJoining ? 'Join Game' : 'Create Room'}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 };
@@ -548,10 +546,10 @@ export const PartyBus = () => {
       )}
 
       {!showNicknamePrompt && !gameStarted && (
-        <div className="relative mt-8 rounded-lg bg-gray-800 p-6">
-          <div className="bg-opacity-20 mb-6 rounded-lg border border-yellow-500 bg-yellow-300 p-4">
-            <p className="mb-1 font-bold text-black">🚧 BETA WARNING! 🚧</p>
-            <p className="text-balance text-black">
+        <Panel className="relative mt-8">
+          <div className="mb-6 rounded-lg border border-yellow-500 bg-yellow-300/20 p-4">
+            <p className="mb-1 font-bold text-yellow-300">🚧 BETA WARNING! 🚧</p>
+            <p className="text-balance text-yellow-100">
               This feature is still in beta. If it breaks, it&apos;s your fault.
               <br />
               Have fun out there!
@@ -572,7 +570,7 @@ export const PartyBus = () => {
               {players.map((player) => (
                 <div
                   key={player.nickname}
-                  className="flex items-center justify-between rounded-lg bg-gray-700 p-3"
+                  className="flex items-center justify-between rounded-lg bg-surface-input p-3"
                 >
                   <span>{player.nickname}</span>
                   {player.nickname === nickname && <span className="text-green-400">(You)</span>}
@@ -582,25 +580,23 @@ export const PartyBus = () => {
           </div>
 
           {isHost && (
-            <button
-              className="cursor-pointer rounded-lg bg-purple-500 px-4 py-2 text-lg font-bold text-white shadow-md"
-              onClick={startGame}
-            >
+            <Button variant="primary" onClick={startGame}>
               Start Game
-            </button>
+            </Button>
           )}
 
           {/* Dancing Uzbek Man Easter Egg */}
           {showDancingUzbek && (
-            <div className="bg-opacity-80 absolute inset-0 z-10 flex items-center justify-center bg-black">
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/80">
               <div className="text-center">
                 <div className="mb-4 animate-bounce text-6xl">🕺</div>
                 <div className="animate-pulse text-2xl font-bold text-yellow-400">
                   VERY NICE! GREAT SUCCESS!
                 </div>
                 {isHost && (
-                  <button
-                    className="mt-4 rounded-lg bg-purple-500 px-4 py-2 text-white"
+                  <Button
+                    variant="ghost"
+                    className="mt-4"
                     onClick={async () => {
                       if (roomId) {
                         const update: Database['public']['Tables']['party_bus_rooms']['Update'] = {
@@ -611,12 +607,12 @@ export const PartyBus = () => {
                     }}
                   >
                     High Five! ✋
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
           )}
-        </div>
+        </Panel>
       )}
 
       {!showNicknamePrompt && gameStarted && roomId && nickname && (
@@ -624,7 +620,7 @@ export const PartyBus = () => {
       )}
 
       {error && (
-        <div className="bg-opacity-20 mt-4 rounded-lg bg-red-500 p-4 text-red-100">{error}</div>
+        <div className="mt-4 rounded-lg bg-red-500/20 p-4 text-red-100">{error}</div>
       )}
     </div>
   );

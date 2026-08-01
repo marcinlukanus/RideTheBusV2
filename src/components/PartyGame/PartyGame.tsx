@@ -11,6 +11,8 @@ import {
   suits,
   Card as GameCard,
 } from '../Game/useGameState';
+import { Button } from '../ui/Button';
+import { Panel } from '../ui/Panel';
 
 type PartyGameProps = {
   roomId: string;
@@ -113,7 +115,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
   };
 
   const renderPlayerGame = (playerState: PlayerState) => (
-    <div className="mb-8 rounded-lg bg-gray-800 p-6">
+    <Panel className="mb-4">
       <h3 className="mb-4 text-xl font-bold">{playerState.nickname}&apos;s Game</h3>
       <div className="flex flex-wrap justify-center gap-5">
         {playerState.cards.map((card: GameCard, index: number) => (
@@ -130,7 +132,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
       )}
       <p className="mt-2 text-lg">Round: {playerState.currentRound}</p>
       <p className="mt-2 text-lg">Drinks taken: {playerState.timesRedrawn}</p>
-    </div>
+    </Panel>
   );
 
   const renderLeaderboard = () => {
@@ -159,14 +161,14 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
 
     return (
       <>
-        <div className="mt-12 rounded-lg bg-gray-800 p-8">
+        <Panel className="mt-12">
           <h2 className="mb-6 text-center text-3xl font-bold">🏆 Final Results 🏆</h2>
           <div className="space-y-4">
             {sortedPlayers.map((player, index) => (
               <div
                 key={player.nickname}
                 className={`flex items-center justify-between rounded-lg p-4 ${
-                  index === 0 ? 'bg-yellow-500/20' : 'bg-gray-700'
+                  index === 0 ? 'bg-yellow-500/20' : 'bg-surface-input'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -184,7 +186,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
             🎉 {winner.nickname} wins with {winner.timesRedrawn}{' '}
             {winner.timesRedrawn === 1 ? 'redraw' : 'redraws'}! 🎉
           </p>
-        </div>
+        </Panel>
         {isCurrentPlayerWinner &&
           createPortal(
             <Confetti
@@ -227,12 +229,9 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
 
               {gameState.isGameOver && !gameState.hasWon && (
                 <div className="mt-8 flex">
-                  <button
-                    className="cursor-pointer rounded-lg bg-white px-4 py-2 text-lg font-bold text-black shadow-md active:translate-y-1"
-                    onClick={() => redrawCards(false)}
-                  >
+                  <Button variant="ghost" onClick={() => redrawCards(false)}>
                     Redraw Cards
-                  </button>
+                  </Button>
                 </div>
               )}
 
