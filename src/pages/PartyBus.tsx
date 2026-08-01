@@ -91,16 +91,39 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
   );
 };
 
+// Persists host credentials across the navigate() that switches route files,
+// which would otherwise unmount the component and reset all state.
+const HOST_SESSION_KEY = 'party-bus-host-session';
+
+type HostSession = { nickname: string; roomId: string };
+
+const consumeHostSession = (): HostSession | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(HOST_SESSION_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(HOST_SESSION_KEY);
+    return JSON.parse(raw) as HostSession;
+  } catch {
+    return null;
+  }
+};
+
 export const PartyBus = () => {
   const navigate = useNavigate();
   const { roomCode } = useParams({ strict: false }) as { roomCode?: string };
-  const [isHost, setIsHost] = useState(false);
-  const [nickname, setNickname] = useState<string | null>(null);
-  const [showNicknamePrompt, setShowNicknamePrompt] = useState(true);
+
+  // consumeHostSession() is called once on mount via the lazy initializer.
+  // If the host just created a room and was navigated here, it returns their
+  // credentials so we can skip the nickname prompt entirely.
+  const [hostSession] = useState<HostSession | null>(consumeHostSession);
+  const [isHost, setIsHost] = useState(!!hostSession);
+  const [nickname, setNickname] = useState<string | null>(hostSession?.nickname ?? null);
+  const [showNicknamePrompt, setShowNicknamePrompt] = useState(!hostSession);
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
   const [error, setError] = useState('');
-  const [roomId, setRoomId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(hostSession?.roomId ?? null);
   const [showDancingUzbek, setShowDancingUzbek] = useState(false);
 
   // Track konami code progress
@@ -476,10 +499,12 @@ export const PartyBus = () => {
           return 'Failed to create room. Please try again.';
         }
 
-        setNickname(name);
-        setIsHost(true);
-        setShowNicknamePrompt(false);
-        setRoomId(room.id);
+        // Write session before navigating — the navigate() switches route files,
+        // unmounting this component. consumeHostSession() picks this up on remount.
+        sessionStorage.setItem(
+          HOST_SESSION_KEY,
+          JSON.stringify({ nickname: name, roomId: room.id } satisfies HostSession),
+        );
         navigate({ to: '/party-bus/$roomCode', params: { roomCode: newRoomCode } });
         return undefined;
       } catch (err) {
