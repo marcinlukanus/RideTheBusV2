@@ -154,6 +154,8 @@ export const PartyBus = () => {
 
   // Track presence channel reference for cleanup
   const presenceRef = useRef<ReturnType<typeof supabase.channel>>();
+  // Pending removal timeouts keyed by nickname — cancelled if player reconnects in time
+  const pendingRemovals = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     if (roomId && nickname) {
@@ -240,11 +242,22 @@ export const PartyBus = () => {
         })
         .on('presence', { event: 'join' }, ({ key }: { key: string }) => {
           console.log('Player joined:', key);
+          // Cancel any pending removal if the player reconnected
+          const pending = pendingRemovals.current.get(key);
+          if (pending !== undefined) {
+            window.clearTimeout(pending);
+            pendingRemovals.current.delete(key);
+          }
           fetchPlayers();
         })
         .on('presence', { event: 'leave' }, ({ key }: { key: string }) => {
           console.log('Player left:', key);
-          removePlayer(key);
+          // Grace period before removing — brief disconnects should not kick players
+          const timeout = window.setTimeout(() => {
+            removePlayer(key);
+            pendingRemovals.current.delete(key);
+          }, 5000);
+          pendingRemovals.current.set(key, timeout);
         })
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
@@ -297,6 +310,10 @@ export const PartyBus = () => {
         if (presenceTimeout) {
           window.clearTimeout(presenceTimeout);
         }
+
+        // Cancel all pending player removals
+        pendingRemovals.current.forEach((t) => window.clearTimeout(t));
+        pendingRemovals.current.clear();
 
         // Leave presence channel
         if (presenceRef.current) {
