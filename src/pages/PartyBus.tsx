@@ -80,7 +80,7 @@ const NicknameModal = ({ onSubmit, isJoining }: NicknameModalProps) => {
             disabled={isSubmitting}
           />
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button variant="primary" className="w-full" onClick={handleSubmit} disabled={isSubmitting}>
+          <Button variant="secondary" className="w-full" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Please wait...' : isJoining ? 'Join Game' : 'Create Room'}
           </Button>
         </div>
@@ -580,7 +580,7 @@ export const PartyBus = () => {
           </div>
 
           {isHost && (
-            <Button variant="primary" onClick={startGame}>
+            <Button variant="secondary" onClick={startGame}>
               Start Game
             </Button>
           )}

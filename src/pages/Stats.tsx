@@ -4,6 +4,7 @@ import { getCardCounts } from '../api/getCardCounts';
 import { CardCountBarChart } from '../components/CardCountBarChart/CardCountBarChart';
 import { CardCountTable } from '../components/CardCountTable/CardCountTable';
 import { queryKeys } from '../lib/queryKeys';
+import { Button } from '../components/ui/Button';
 
 export type CardCount = {
   card_rank: string;
@@ -64,30 +65,18 @@ export const Stats = (): JSX.Element => {
       <CardCountBarChart cardCounts={sortedCardCounts} />
 
       <div className="my-6 flex justify-center gap-3">
-        <button
-          className="mr-2 rounded bg-blue-500 px-4 py-2 text-white hover:cursor-pointer hover:bg-blue-400"
-          onClick={() => setSortCriteria('rank')}
-        >
+        <Button variant="ghost" onClick={() => setSortCriteria('rank')}>
           Sort by Rank
-        </button>
-        <button
-          className="mr-2 rounded bg-blue-500 px-4 py-2 text-white hover:cursor-pointer hover:bg-blue-400"
-          onClick={() => setSortCriteria('suit')}
-        >
+        </Button>
+        <Button variant="ghost" onClick={() => setSortCriteria('suit')}>
           Sort by Suit
-        </button>
-        <button
-          className="mr-2 rounded bg-blue-500 px-4 py-2 text-white hover:cursor-pointer hover:bg-blue-400"
-          onClick={() => setSortCriteria('count')}
-        >
+        </Button>
+        <Button variant="ghost" onClick={() => setSortCriteria('count')}>
           Sort by Count
-        </button>
-        <button
-          className="rounded bg-blue-500 px-4 py-2 text-white hover:cursor-pointer hover:bg-blue-400"
-          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-        >
+        </Button>
+        <Button variant="ghost" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
           {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-        </button>
+        </Button>
       </div>
 
       <CardCountTable cardCounts={sortedCardCounts} />
