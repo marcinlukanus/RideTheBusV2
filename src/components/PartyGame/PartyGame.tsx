@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Card } from '../Card/Card';
 import { usePartyGameState } from './usePartyGameState';
 import Confetti from 'react-confetti';
@@ -38,12 +37,7 @@ export const PartyGame = ({ roomId, nickname }: PartyGameProps) => {
     thirdRound,
     finalRound,
     redrawCards,
-    initializeGame,
   } = usePartyGameState(roomId, nickname);
-
-  useEffect(() => {
-    initializeGame();
-  }, []);
 
   const renderButtons = () => {
     switch (gameState.currentRound) {

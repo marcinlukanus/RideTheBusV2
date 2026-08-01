@@ -122,7 +122,13 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
 
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
+  // Ref so the subscribe callback always calls the latest initializeGame
+  // without needing to re-create the channel when the function reference changes.
+  const initializeGameRef = useRef<(() => Promise<void>) | null>(null);
+
   useEffect(() => {
+    let initialized = false;
+
     const channel = supabase
       .channel(`party-game:${roomId}`)
       .on('broadcast', { event: 'player_action' }, ({ payload }) => {
@@ -134,7 +140,14 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
           dispatch({ type: 'UPDATE_PLAYER_STATE', nickname: sender, state: newState });
         }
       })
-      .subscribe();
+      .subscribe(async (status) => {
+        // Wait for the channel to be fully subscribed before drawing and
+        // broadcasting the initial hand — send() is a no-op before this point.
+        if (status === 'SUBSCRIBED' && !initialized) {
+          initialized = true;
+          await initializeGameRef.current?.();
+        }
+      });
 
     channelRef.current = channel;
 
@@ -201,6 +214,9 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
 
     await redrawCards(false, true);
   };
+
+  // Keep the ref current so the subscribe callback always calls the latest closure.
+  initializeGameRef.current = initializeGame;
 
   const firstRound = async (color: RedOrBlack) => {
     const current = gameStateRef.current;
@@ -311,6 +327,5 @@ export const usePartyGameState = (roomId: string, nickname: string) => {
     thirdRound,
     finalRound,
     redrawCards,
-    initializeGame,
   };
 };
